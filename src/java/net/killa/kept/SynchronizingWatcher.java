@@ -61,8 +61,6 @@ class SynchronizingWatcher implements Watcher {
 			SynchronizingWatcher.LOG.debug("ignoring no-op event " + event.getType() + " in state " + event.getState());
 
 			return;
-		} else {
-			SynchronizingWatcher.LOG.error(event.getState() + " " + event.getType());
 		}
 
 		try {
