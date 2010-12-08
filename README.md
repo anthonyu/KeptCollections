@@ -51,7 +51,7 @@ Both are accessed the same way:
     String value = map.get("key");
 </code>
 
-How stable are the Collections?
+How stable are the collections?
 -------------------------------
 
 The KeptSet, KeptMap and KeptLock implementations have seen several years
@@ -60,3 +60,22 @@ companies.
 
 The other implementations are similar in code base and well unit tested,
 but have not seen production usage.
+
+Which Collections interfaces are implemented?
+---------------------------------------------
+
+KeptSet
+KeptMap
+KeptConcurrentMap
+
+KeptCollection
+KeptList
+KeptQueue
+KeptBlockingQueue
+
+KeptLock (not from Collections, but it sort of fits)
+
+Where can I get a Jar?
+----------------------
+
+Right <a href="https://github.com/downloads/anthonyu/KeptCollections/kept-collections-0.9.jar">here</a>.
