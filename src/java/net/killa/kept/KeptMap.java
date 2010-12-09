@@ -30,6 +30,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.data.Stat;
 
 /**
  * A Java {@link Map} that is kept synchronized amongst a {@link ZooKeeper}
@@ -128,26 +129,35 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 		String path = this.znode + '/' + key;
 
 		try {
-			if (this.map.containsKey(key)) {
-				String oldval = this.get(key);
+			this.keeper.create(path, value.getBytes(), this.acl, this.createMode);
 
-				this.keeper.setData(path, value.getBytes(), -1);
-
-				return oldval;
-			} else {
-				this.keeper.create(path, value.getBytes(), this.acl, this.createMode);
-
-				return null;
-			}
+			return null;
 		} catch (KeeperException.NodeExistsException e) {
+			// it already exists
 			try {
-				// we won the race, we must return the value in the znode,
-				// not the value in the map
-				String oldval = new String(this.keeper.getData(this.znode + '/' + key, false, null));
+				Stat stat = new Stat();
+				int j = 0;
 
-				this.keeper.setData(path, value.getBytes(), -1);
+				while (true) {
+					// get the old value and its version
+					byte[] oldval = this.keeper.getData(path, false, stat);
 
-				return oldval;
+					try {
+						// set the new value
+						this.keeper.setData(path, value.getBytes(), stat.getVersion());
+
+						// return the old value
+						return new String(oldval);
+					} catch (KeeperException.BadVersionException f) {
+						if (j > 10)
+							throw f;
+
+						// someone updated it in between, try again
+						KeptMap.LOG.debug("caught bad version attempting to update, retrying");
+
+						Thread.sleep(50);
+					}
+				}
 			} catch (KeeperException f) {
 				throw new RuntimeException("KeeperException caught", f);
 			} catch (InterruptedException f) {
@@ -158,14 +168,32 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 	}
 
 	private String removeUnsynchronized(Object key) throws InterruptedException, KeeperException {
-		if (!this.map.containsKey(key))
+		String path = this.znode + '/' + key;
+
+		try {
+			Stat stat = new Stat();
+			int i = 0;
+
+			while (true) {
+				try {
+					byte[] oldval = this.keeper.getData(path, false, stat);
+
+					this.keeper.delete(path, stat.getVersion());
+
+					return new String(oldval);
+				} catch (KeeperException.BadVersionException e) {
+					if (i > 10)
+						throw e;
+
+					// someone updated it in between, try again
+					KeptMap.LOG.debug("caught bad version attempting to update, retrying");
+
+					Thread.sleep(50);
+				}
+			}
+		} catch (KeeperException.NoNodeException e) {
 			return null;
-
-		String oldval = this.map.get(key);
-
-		this.keeper.delete(this.znode + '/' + key, -1);
-
-		return oldval;
+		}
 	}
 
 	/**
