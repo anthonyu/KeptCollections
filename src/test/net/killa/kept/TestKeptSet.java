@@ -20,167 +20,156 @@ package net.killa.kept;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.ZooKeeper;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-public class TestKeptSet {
-	private static final String PARENT = "/testkeptset";
+public class TestKeptSet extends BaseKeptUtil {
+    {
+        parent = "/testkeptset";
+    }
 
-	private ZooKeeper keeper;
+    @Test
+    public void testKeptSet() throws IOException, KeeperException,
+            InterruptedException {
+        KeptSet ks = new KeptSet(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-	@Before
-	public void before() throws IOException, InterruptedException, KeeperException {
-		CountDownLatch latch = new CountDownLatch(1);
+        // check to see that changes made to the set are reflected in the znode
+        String znode = Long.toString(System.currentTimeMillis());
 
-		// FIXME: set up a zookeeper server in process
-		CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
-		watcher.setLatch(latch);
-		this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
-		if (!latch.await(5, TimeUnit.SECONDS))
-			throw new RuntimeException("unable to connect to server");
-	}
+        Assert.assertFalse(ks.contains(znode));
 
-	@After
-	public void after() throws InterruptedException, KeeperException {
-		for (String s : this.keeper.getChildren(TestKeptSet.PARENT, false))
-			this.keeper.delete(TestKeptSet.PARENT + '/' + s, -1);
-		this.keeper.close();
-	}
+        ks.add(znode);
 
-	@Test
-	public void testKeptSet() throws IOException, KeeperException, InterruptedException {
-		KeptSet ks = new KeptSet(this.keeper, TestKeptSet.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        Assert.assertNotNull(this.keeper.exists(parent + '/' + znode, null));
 
-		// check to see that changes made to the set are reflected in the znode
-		String znode = Long.toString(System.currentTimeMillis());
+        this.keeper.delete(parent + '/' + znode, -1);
 
-		Assert.assertFalse(ks.contains(znode));
+        // wait for it to take effect
+        Thread.sleep(50);
 
-		ks.add(znode);
+        Assert.assertFalse(ks.contains(znode));
 
-		Assert.assertNotNull(this.keeper.exists(TestKeptSet.PARENT + '/' + znode, null));
+        // check to see that changes on zookeeper are reflected in the set
+        znode = Long.toString(System.currentTimeMillis());
 
-		this.keeper.delete(TestKeptSet.PARENT + '/' + znode, -1);
+        Assert.assertFalse(ks.contains(znode));
 
-		// wait for it to take effect
-		Thread.sleep(50);
+        this.keeper.create(parent + '/' + znode, new byte[0],
+                Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		Assert.assertFalse(ks.contains(znode));
+        // wait for it to take effect
+        Thread.sleep(50);
 
-		// check to see that changes on zookeeper are reflected in the set
-		znode = Long.toString(System.currentTimeMillis());
+        Assert.assertTrue(ks.contains(znode));
 
-		Assert.assertFalse(ks.contains(znode));
+        ks.remove(znode);
 
-		this.keeper.create(TestKeptSet.PARENT + '/' + znode, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        Assert.assertNull(this.keeper.exists(parent + '/' + znode, null));
+    }
 
-		// wait for it to take effect
-		Thread.sleep(50);
+    @Test
+    public void testKeptSetReAdd() throws IOException, KeeperException,
+            InterruptedException {
+        KeptSet ks = new KeptSet(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-		Assert.assertTrue(ks.contains(znode));
+        // check to see that changes made to the set are reflected in the znode
+        String znode = Long.toString(System.currentTimeMillis());
 
-		ks.remove(znode);
+        Assert.assertFalse(ks.contains(znode));
 
-		Assert.assertNull(this.keeper.exists(TestKeptSet.PARENT + '/' + znode, null));
-	}
+        Assert.assertTrue(ks.add(znode));
+        Assert.assertFalse(ks.add(znode));
 
-	@Test
-	public void testKeptSetReAdd() throws IOException, KeeperException, InterruptedException {
-		KeptSet ks = new KeptSet(this.keeper, TestKeptSet.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        Thread.sleep(50);
 
-		// check to see that changes made to the set are reflected in the znode
-		String znode = Long.toString(System.currentTimeMillis());
+        Assert.assertFalse(ks.add(znode));
+    }
 
-		Assert.assertFalse(ks.contains(znode));
+    @Test
+    public void testKeptSetClear() throws IOException, KeeperException,
+            InterruptedException {
+        KeptSet ks = new KeptSet(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-		Assert.assertTrue(ks.add(znode));
-		Assert.assertFalse(ks.add(znode));
+        ks.add("one");
+        ks.add("two");
+        ks.add("three");
 
-		Thread.sleep(50);
+        // wait for it to take effect
+        Thread.sleep(50);
 
-		Assert.assertFalse(ks.add(znode));
-	}
+        Assert.assertTrue("set does not contain one", ks.contains("one"));
+        Assert.assertTrue("set does not contain two", ks.contains("two"));
+        Assert.assertTrue("set does not contain three", ks.contains("three"));
 
-	@Test
-	public void testKeptSetClear() throws IOException, KeeperException, InterruptedException {
-		KeptSet ks = new KeptSet(this.keeper, TestKeptSet.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        ks.clear();
 
-		ks.add("one");
-		ks.add("two");
-		ks.add("three");
+        // wait for it to take effect
+        Thread.sleep(50);
 
-		// wait for it to take effect
-		Thread.sleep(50);
+        Assert.assertTrue("set is not empty", ks.isEmpty());
 
-		Assert.assertTrue("set does not contain one", ks.contains("one"));
-		Assert.assertTrue("set does not contain two", ks.contains("two"));
-		Assert.assertTrue("set does not contain three", ks.contains("three"));
+        Assert.assertEquals("set is not empty", 0, ks.size());
+    }
 
-		ks.clear();
+    @Test
+    public void testKeptSetAddAll() throws IOException, KeeperException,
+            InterruptedException {
+        Set<String> hs = new HashSet<String>();
 
-		// wait for it to take effect
-		Thread.sleep(50);
+        hs.add("one");
+        hs.add("two");
+        hs.add("three");
 
-		Assert.assertTrue("set is not empty", ks.isEmpty());
+        KeptSet s = new KeptSet(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-		Assert.assertEquals("set is not empty", 0, ks.size());
-	}
+        s.addAll(hs);
 
-	@Test
-	public void testKeptSetAddAll() throws IOException, KeeperException, InterruptedException {
-		Set<String> hs = new HashSet<String>();
+        // wait for it to take effect
+        Thread.sleep(50);
 
-		hs.add("one");
-		hs.add("two");
-		hs.add("three");
+        Assert.assertTrue("set does not contain all", s.containsAll(hs));
+    }
 
-		KeptSet s = new KeptSet(this.keeper, TestKeptSet.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+    @Test
+    public void testKeptSetRetainAll() throws IOException, KeeperException,
+            InterruptedException {
+        Set<String> hs1 = new HashSet<String>();
 
-		s.addAll(hs);
+        hs1.add("one");
+        hs1.add("two");
+        hs1.add("three");
 
-		// wait for it to take effect
-		Thread.sleep(50);
+        Set<String> hs2 = new HashSet<String>();
 
-		Assert.assertTrue("set does not contain all", s.containsAll(hs));
-	}
+        hs2.add("two");
+        hs2.add("three");
+        hs2.add("four");
 
-	@Test
-	public void testKeptSetRetainAll() throws IOException, KeeperException, InterruptedException {
-		Set<String> hs1 = new HashSet<String>();
+        KeptSet ks = new KeptSet(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-		hs1.add("one");
-		hs1.add("two");
-		hs1.add("three");
+        ks.addAll(hs1);
 
-		Set<String> hs2 = new HashSet<String>();
+        // wait for it to take effect
+        Thread.sleep(50);
 
-		hs2.add("two");
-		hs2.add("three");
-		hs2.add("four");
+        ks.retainAll(hs2);
+        hs1.retainAll(hs2);
 
-		KeptSet ks = new KeptSet(this.keeper, TestKeptSet.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        // wait for it to take effect
+        Thread.sleep(50);
 
-		ks.addAll(hs1);
-
-		// wait for it to take effect
-		Thread.sleep(50);
-
-		ks.retainAll(hs2);
-		hs1.retainAll(hs2);
-
-		// wait for it to take effect
-		Thread.sleep(50);
-
-		Assert.assertTrue("set does not contain all", ks.containsAll(hs1));
-		Assert.assertEquals("sets are not the same size", hs1.size(), ks.size());
-	}
+        Assert.assertTrue("set does not contain all", ks.containsAll(hs1));
+        Assert
+                .assertEquals("sets are not the same size", hs1.size(), ks
+                        .size());
+    }
 }
