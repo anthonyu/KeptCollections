@@ -107,18 +107,16 @@ public class TestKeptQueue extends BaseKeptUtil {
 		Assert.assertNull("not null", kq.poll());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test(expected = NoSuchElementException.class)
 	public void testKeptQueueEmptyElement() throws IOException, KeeperException, InterruptedException {
-		KeptQueue kq = new KeptQueue(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+		KeptQueue<Object> kq = new KeptQueue<Object>(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 		kq.element();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Test(expected = NoSuchElementException.class)
 	public void testKeptQueueEmptyRemove() throws IOException, KeeperException, InterruptedException {
-		KeptQueue kq = new KeptQueue(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+		KeptQueue<Object> kq = new KeptQueue<Object>(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 		kq.remove();
 	}
