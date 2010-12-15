@@ -19,7 +19,7 @@ Why KeptCollections?
 Implementing a distributed data structure from scratch is difficult.
 ZooKeeper programming is less hard, but still no walk in the park.
 Conversely, KeptCollections implements the well known Java Collections
-APIs, so they can be easily dropped into new or existing Java code and
+APIs, so they can be dropped into new or existing Java code and
 easily make those applications distributed.
 
 How does one use KeptCollections?
@@ -64,16 +64,24 @@ but have not seen production usage.
 Which Collections interfaces are implemented?
 ---------------------------------------------
 
-KeptSet
-KeptMap
-KeptConcurrentMap
+Set
 
-KeptCollection
-KeptList
-KeptQueue
-KeptBlockingQueue
 
-KeptLock (not from Collections, but it sort of fits)
+Map
+
+ConcurrentMap
+
+
+Collection
+
+List
+
+Queue
+
+BlockingQueue
+
+
+Lock (not from Java Collections, but it sort of fits here)
 
 Where can I get a Jar?
 ----------------------

@@ -26,105 +26,94 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class TestKeptMap extends BaseKeptUtil {
-    {
-        parent = "/testkeptmap";
-    }
+	{
+		this.parent = "/testkeptmap";
+	}
 
-    @Test
-    public void testKeptMap() throws IOException, KeeperException,
-            InterruptedException {
-        KeptMap s = new KeptMap(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
-                CreateMode.EPHEMERAL);
+	@Test
+	public void testKeptMap() throws IOException, KeeperException, InterruptedException {
+		KeptMap s = new KeptMap(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-        // check to see that changes made to the map are reflected in the znode
-        String znode = Long.toString(System.currentTimeMillis());
-        String value = "lorem ipsum";
+		// check to see that changes made to the map are reflected in the znode
+		String znode = Long.toString(System.currentTimeMillis());
+		String value = "lorem ipsum";
 
-        Assert.assertFalse(s.containsKey(znode));
+		Assert.assertFalse(s.containsKey(znode));
 
-        s.put(znode, value);
+		s.put(znode, value);
 
-        Assert.assertNotNull(this.keeper.exists(parent + '/' + znode, null));
+		Assert.assertNotNull(this.keeper.exists(this.parent + '/' + znode, null));
 
-        this.keeper.delete(parent + '/' + znode, -1);
+		this.keeper.delete(this.parent + '/' + znode, -1);
 
-        // wait for it to take effect
-        Thread.sleep(100);
+		// wait for it to take effect
+		Thread.sleep(100);
 
-        Assert.assertFalse(s.containsKey(znode));
+		Assert.assertFalse(s.containsKey(znode));
 
-        // check to see that changes on zookeeper are reflected in the map
-        znode = Long.toString(System.currentTimeMillis());
+		// check to see that changes on zookeeper are reflected in the map
+		znode = Long.toString(System.currentTimeMillis());
 
-        Assert.assertFalse(s.containsKey(znode));
+		Assert.assertFalse(s.containsKey(znode));
 
-        this.keeper.create(parent + '/' + znode, value.getBytes(),
-                Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+		this.keeper.create(this.parent + '/' + znode, value.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-        // wait for it to take effect
-        Thread.sleep(100);
+		// wait for it to take effect
+		Thread.sleep(100);
 
-        Assert.assertTrue(s.containsKey(znode));
-        Assert.assertEquals(value, s.get(znode));
+		Assert.assertTrue(s.containsKey(znode));
+		Assert.assertEquals(value, s.get(znode));
 
-        s.remove(znode);
+		s.remove(znode);
 
-        Assert.assertNull(this.keeper.exists(parent + '/' + znode, null));
-    }
+		Assert.assertNull(this.keeper.exists(this.parent + '/' + znode, null));
+	}
 
-    @Test
-    public void testKeptMapClear() throws IOException, KeeperException,
-            InterruptedException {
-        KeptMap km = new KeptMap(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
-                CreateMode.EPHEMERAL);
+	@Test
+	public void testKeptMapClear() throws IOException, KeeperException, InterruptedException {
+		KeptMap km = new KeptMap(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-        km.put("one", "value");
-        km.put("two", "value");
-        km.put("three", "value");
+		km.put("one", "value");
+		km.put("two", "value");
+		km.put("three", "value");
 
-        // wait for it to take effect
-        Thread.sleep(100);
+		// wait for it to take effect
+		Thread.sleep(100);
 
-        Assert.assertTrue("map does not contain one", km.containsKey("one"));
-        Assert.assertTrue("map does not contain two", km.containsKey("two"));
-        Assert
-                .assertTrue("map does not contain three", km
-                        .containsKey("three"));
+		Assert.assertTrue("map does not contain one", km.containsKey("one"));
+		Assert.assertTrue("map does not contain two", km.containsKey("two"));
+		Assert.assertTrue("map does not contain three", km.containsKey("three"));
 
-        km.clear();
+		km.clear();
 
-        // wait for it to take effect
-        Thread.sleep(100);
+		// wait for it to take effect
+		Thread.sleep(100);
 
-        Assert.assertTrue("map is not empty", km.isEmpty());
+		Assert.assertTrue("map is not empty", km.isEmpty());
 
-        Assert.assertEquals("map is not empty", 0, km.size());
-    }
+		Assert.assertEquals("map is not empty", 0, km.size());
+	}
 
-    @Test
-    public void testKeptMapOverwrite() throws KeeperException,
-            InterruptedException {
-        KeptMap km = new KeptMap(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
-                CreateMode.EPHEMERAL);
+	@Test
+	public void testKeptMapOverwrite() throws KeeperException, InterruptedException {
+		KeptMap km = new KeptMap(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-        Assert.assertNull("value not previously null", km.put("one", "value"));
+		Assert.assertNull("value not previously null", km.put("one", "value"));
 
-        // wait for it to take effect
-        Thread.sleep(100);
+		// wait for it to take effect
+		Thread.sleep(100);
 
-        Assert.assertEquals("map does not contain one", "value", km.get("one"));
+		Assert.assertEquals("map does not contain one", "value", km.get("one"));
 
-        Assert.assertEquals("value not previously equal", "value", km.put(
-                "one", "eulav"));
+		Assert.assertEquals("value not previously equal", "value", km.put("one", "eulav"));
 
-        // wait for it to take effect
-        Thread.sleep(100);
+		// wait for it to take effect
+		Thread.sleep(100);
 
-        Assert.assertEquals("map does not contain one", "eulav", km.get("one"));
+		Assert.assertEquals("map does not contain one", "eulav", km.get("one"));
 
-        // try again, but run to win the race condition in synchronize
-        Assert.assertNull("value not previously null", km.put("two", "value"));
-        Assert.assertEquals("value not previously equal", "value", km.put(
-                "two", "eulav"));
-    }
+		// try again, but run to win the race condition in synchronize
+		Assert.assertNull("value not previously null", km.put("two", "value"));
+		Assert.assertEquals("value not previously equal", "value", km.put("two", "eulav"));
+	}
 }

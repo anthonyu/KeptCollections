@@ -27,28 +27,27 @@ import org.junit.After;
 import org.junit.Before;
 
 public class BaseKeptUtil {
-    protected String parent;
-    protected ZooKeeper keeper;
+	protected String parent;
+	protected ZooKeeper keeper;
 
-    @Before
-    public void before() throws IOException, InterruptedException,
-            KeeperException {
-        CountDownLatch latch = new CountDownLatch(1);
+	@Before
+	public void before() throws IOException, InterruptedException, KeeperException {
+		CountDownLatch latch = new CountDownLatch(1);
 
-        // FIXME: set up a zookeeper server in process
-        CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
-        watcher.setLatch(latch);
-        this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
-        if (!latch.await(5, TimeUnit.SECONDS)) {
-            throw new RuntimeException("unable to connect to server");
-        }
-    }
+		// FIXME: set up a zookeeper server in process
+		CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
+		watcher.setLatch(latch);
+		this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
+		if (!latch.await(5, TimeUnit.SECONDS)) {
+			throw new RuntimeException("unable to connect to server");
+		}
+	}
 
-    @After
-    public void after() throws InterruptedException, KeeperException {
-        for (String s : this.keeper.getChildren(parent, false)) {
-            this.keeper.delete(parent + '/' + s, -1);
-        }
-        this.keeper.close();
-    }
+	@After
+	public void after() throws InterruptedException, KeeperException {
+		for (String s : this.keeper.getChildren(this.parent, false)) {
+			this.keeper.delete(this.parent + '/' + s, -1);
+		}
+		this.keeper.close();
+	}
 }

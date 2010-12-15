@@ -27,62 +27,55 @@ import org.junit.After;
 import org.junit.Test;
 
 public class TestKeptLock extends BaseKeptUtil {
-    private static final String LOCK = "/testkeptlock";
+	private static final String LOCK = "/testkeptlock";
 
-    @After
-    public void after() throws KeeperException, InterruptedException {
-        try {
-            this.keeper.delete(TestKeptLock.LOCK, -1);
-        } catch (KeeperException.NoNodeException e) {
-            // ignore it
-        }
-        this.keeper.close();
-    }
+	@Override
+	@After
+	public void after() throws KeeperException, InterruptedException {
+		try {
+			this.keeper.delete(TestKeptLock.LOCK, -1);
+		} catch (KeeperException.NoNodeException e) {
+			// ignore it
+		}
+		this.keeper.close();
+	}
 
-    @Test
-    public void testKeptLock() throws KeeperException, InterruptedException {
-        KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK,
-                Ids.OPEN_ACL_UNSAFE);
+	@Test
+	public void testKeptLock() throws KeeperException, InterruptedException {
+		KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK, Ids.OPEN_ACL_UNSAFE);
 
-        Assert.assertTrue("cannot lock", kl.tryLock());
-        Assert.assertFalse("can lock", kl.tryLock());
+		Assert.assertTrue("cannot lock", kl.tryLock());
+		Assert.assertFalse("can lock", kl.tryLock());
 
-        kl.unlock();
-        kl.lock();
+		kl.unlock();
+		kl.lock();
 
-        Assert.assertFalse("can lock", kl.tryLock());
+		Assert.assertFalse("can lock", kl.tryLock());
 
-        kl.unlock();
-        kl.lockInterruptibly();
+		kl.unlock();
+		kl.lockInterruptibly();
 
-        Assert.assertFalse("can lock", kl.tryLock());
-    }
+		Assert.assertFalse("can lock", kl.tryLock());
+	}
 
-    @Test
-    public void testKeptLockWait() throws KeeperException, InterruptedException {
-        KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK,
-                Ids.OPEN_ACL_UNSAFE);
+	@Test
+	public void testKeptLockWait() throws KeeperException, InterruptedException {
+		KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK, Ids.OPEN_ACL_UNSAFE);
 
-        long now = System.currentTimeMillis();
-        Assert.assertTrue("cannot lock", kl.tryLock(5, TimeUnit.SECONDS));
+		long now = System.currentTimeMillis();
+		Assert.assertTrue("cannot lock", kl.tryLock(5, TimeUnit.SECONDS));
 
-        Assert.assertTrue("time is way out of proportion", System
-                .currentTimeMillis()
-                - now < 100);
+		Assert.assertTrue("time is way out of proportion", System.currentTimeMillis() - now < 100);
 
-        Assert.assertFalse("can lock", kl.tryLock(5, TimeUnit.SECONDS));
+		Assert.assertFalse("can lock", kl.tryLock(5, TimeUnit.SECONDS));
 
-        Assert.assertTrue("time is way out of proportion", System
-                .currentTimeMillis()
-                - now < 6000);
-    }
+		Assert.assertTrue("time is way out of proportion", System.currentTimeMillis() - now < 6000);
+	}
 
-    @Test(expected = IllegalStateException.class)
-    public void testKeptLockUnlockUnlocked() throws KeeperException,
-            InterruptedException {
-        KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK,
-                Ids.OPEN_ACL_UNSAFE);
+	@Test(expected = IllegalStateException.class)
+	public void testKeptLockUnlockUnlocked() throws KeeperException, InterruptedException {
+		KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK, Ids.OPEN_ACL_UNSAFE);
 
-        kl.unlock();
-    }
+		kl.unlock();
+	}
 }
