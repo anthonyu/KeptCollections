@@ -17,91 +17,125 @@
  */
 package net.killa.kept;
 
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.ZooKeeper;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-public class TestKeptList {
-	private static final String PARENT = "/testkeptlist";
+public class TestKeptList extends BaseKeptUtil {
+    {
+        parent = "/testkeptlist";
+    }
 
-	private ZooKeeper keeper;
+    @Test
+    public void testKeptStringList() throws Exception {
+        KeptList<String> kl = new KeptList<String>(this.keeper, parent,
+                Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-	@Before
-	public void before() throws IOException, InterruptedException, KeeperException {
-		CountDownLatch latch = new CountDownLatch(1);
+        String payload = Long.toString(System.currentTimeMillis());
+        Thread.sleep(100);
+        kl.add(Long.toString(System.currentTimeMillis()));
+        Thread.sleep(100);
+        kl.add(payload);
+        Thread.sleep(100);
+        kl.add(Long.toString(System.currentTimeMillis()));
+        Thread.sleep(100);
+        kl.add(payload);
+        Thread.sleep(100);
 
-		// FIXME: set up a zookeeper server in process
-		CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
-		watcher.setLatch(latch);
-		this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
-		if (!latch.await(5, TimeUnit.SECONDS))
-			throw new RuntimeException("unable to connect to server");
-	}
+        Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
+        Assert.assertEquals("wrong index", 3, kl.lastIndexOf(payload));
+        Assert.assertEquals("not equal", payload, kl.get(1));
+        Assert.assertEquals("not equal", payload, kl.remove(3));
+        Thread.sleep(100);
+        Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
+        Assert.assertEquals("wrong index", 1, kl.lastIndexOf(payload));
 
-	@After
-	public void after() throws InterruptedException, KeeperException {
-		for (String s : this.keeper.getChildren(TestKeptList.PARENT, false))
-			this.keeper.delete(TestKeptList.PARENT + '/' + s, -1);
-		this.keeper.close();
-	}
+        kl.set(2, payload);
+        Thread.sleep(1000);
+        Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
+        Assert.assertEquals("wrong index", 2, kl.lastIndexOf(payload));
+    }
 
-	@Test
-	public void testKeptList() throws IOException, KeeperException, InterruptedException {
-		KeptList kl = new KeptList(this.keeper, TestKeptList.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+    @Test
+    public void testKeptLongList() throws Exception {
+        KeptList<Long> kl = new KeptList<Long>(this.keeper, parent,
+                Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		String payload = Long.toString(System.currentTimeMillis());
+        long payload = System.currentTimeMillis();
+        Thread.sleep(100);
+        kl.add(System.currentTimeMillis());
+        Thread.sleep(100);
+        kl.add(payload);
+        Thread.sleep(100);
+        kl.add(System.currentTimeMillis());
+        Thread.sleep(100);
+        kl.add(payload);
+        Thread.sleep(100);
 
-		Thread.sleep(100);
+        Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
+        Assert.assertEquals("wrong index", 3, kl.lastIndexOf(payload));
+        Assert.assertEquals(0D, payload, kl.get(1));
+        Assert.assertEquals(0D, payload, kl.remove(3));
+        Thread.sleep(100);
+        Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
+        Assert.assertEquals("wrong index", 1, kl.lastIndexOf(payload));
 
-		kl.add(Long.toString(System.currentTimeMillis()));
+        kl.set(2, payload);
+        Thread.sleep(1000);
+        Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
+        Assert.assertEquals("wrong index", 2, kl.lastIndexOf(payload));
+    }
 
-		Thread.sleep(100);
+    @Test
+    public void testKeptNonprimitiveList() throws Exception {
+        KeptList<SerializablePerson> kl = new KeptList<SerializablePerson>(
+                this.keeper, parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		kl.add(payload);
+        SerializablePerson person1 = new SerializablePerson();
+        person1.age = 100;
+        person1.name = "person1";
+        SerializablePerson person2 = new SerializablePerson();
+        person2.age = 90;
+        person2.name = "person2";
 
-		Thread.sleep(100);
+        kl.add(person1);
+        Thread.sleep(100);
+        kl.add(person2);
+        Thread.sleep(100);
+        kl.add(person1);
+        Thread.sleep(100);
+        kl.add(person2);
+        Thread.sleep(100);
 
-		kl.add(Long.toString(System.currentTimeMillis()));
+        Assert.assertEquals("wrong index", 0, kl.indexOf(person1));
+        Assert.assertEquals("wrong index", 2, kl.lastIndexOf(person1));
+        Assert.assertEquals("wrong index", 1, kl.indexOf(person2));
+        Assert.assertEquals("wrong index", 3, kl.lastIndexOf(person2));
+        Assert.assertEquals(person1, kl.get(0));
+        Assert.assertEquals(person2, kl.get(1));
+        Assert.assertEquals(person1, kl.get(2));
+        Assert.assertEquals(person2, kl.get(3));
 
-		Thread.sleep(100);
+        Assert.assertEquals(person1, kl.remove(2));
+        Thread.sleep(100);
+        Assert.assertEquals("wrong index", 0, kl.indexOf(person1));
+        Assert.assertEquals("wrong index", 0, kl.lastIndexOf(person1));
 
-		kl.add(payload);
+        kl.set(2, person1);
+        Thread.sleep(1000);
+        Assert.assertEquals("wrong index", 0, kl.indexOf(person1));
+        Assert.assertEquals("wrong index", 2, kl.lastIndexOf(person1));
+    }
 
-		Thread.sleep(100);
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testKeptCollectionBigIndex() throws KeeperException,
+            InterruptedException {
+        KeptList<String> kl = new KeptList<String>(this.keeper, parent,
+                Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
-		Assert.assertEquals("wrong index", 3, kl.lastIndexOf(payload));
+        kl.set(Integer.MAX_VALUE, "wtf");
+    }
 
-		Assert.assertEquals("not equal", payload, kl.get(1));
-
-		Assert.assertEquals("not equal", payload, kl.remove(3));
-
-		Thread.sleep(100);
-
-		Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
-		Assert.assertEquals("wrong index", 1, kl.lastIndexOf(payload));
-
-		kl.set(2, payload);
-
-		Thread.sleep(1000);
-
-		Assert.assertEquals("wrong index", 1, kl.indexOf(payload));
-		Assert.assertEquals("wrong index", 2, kl.lastIndexOf(payload));
-	}
-
-	@Test(expected = IndexOutOfBoundsException.class)
-	public void testKeptCollectionBigIndex() throws KeeperException, InterruptedException {
-		KeptList kl = new KeptList(this.keeper, TestKeptList.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-
-		kl.set(Integer.MAX_VALUE, "wtf");
-	}
 }

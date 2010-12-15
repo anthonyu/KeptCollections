@@ -19,99 +19,113 @@ package net.killa.kept;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.ZooKeeper;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-public class TestKeptQueue {
-	private static final String PARENT = "/testkeptqueue";
+public class TestKeptQueue extends BaseKeptUtil {
+    {
+        parent = "/testkeptqueue";
+    }
 
-	private ZooKeeper keeper;
+    @Test
+    public void testKeptStringQueue() throws Exception {
+        KeptQueue<String> kq = new KeptQueue<String>(this.keeper, parent,
+                Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-	@Before
-	public void before() throws IOException, InterruptedException, KeeperException {
-		CountDownLatch latch = new CountDownLatch(1);
+        String payload1 = Long.toString(System.currentTimeMillis());
+        Thread.sleep(100);
+        String payload2 = Long.toString(System.currentTimeMillis());
+        Thread.sleep(100);
+        String payload3 = Long.toString(System.currentTimeMillis());
 
-		// FIXME: set up a zookeeper server in process
-		CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
-		watcher.setLatch(latch);
-		this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
-		if (!latch.await(5, TimeUnit.SECONDS))
-			throw new RuntimeException("unable to connect to server");
-	}
+        Assert.assertNull("not null", kq.peek());
 
-	@After
-	public void after() throws InterruptedException, KeeperException {
-		for (String s : this.keeper.getChildren(TestKeptQueue.PARENT, false))
-			this.keeper.delete(TestKeptQueue.PARENT + '/' + s, -1);
-		this.keeper.close();
-	}
+        kq.offer(payload1);
+        Thread.sleep(100);
 
-	@Test
-	public void testKeptQueue() throws IOException, KeeperException, InterruptedException {
-		KeptQueue kq = new KeptQueue(this.keeper, TestKeptQueue.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        kq.offer(payload2);
+        Thread.sleep(100);
 
-		String payload1 = Long.toString(System.currentTimeMillis());
+        kq.offer(payload3);
+        Thread.sleep(100);
 
-		Thread.sleep(100);
+        Assert.assertEquals("not equal", payload1, kq.peek());
+        Assert.assertEquals("not equal", payload1, kq.remove());
+        Thread.sleep(100);
 
-		String payload2 = Long.toString(System.currentTimeMillis());
+        Assert.assertEquals("not equal", payload2, kq.element());
+        Assert.assertEquals("not equal", payload2, kq.poll());
+        Thread.sleep(100);
 
-		Thread.sleep(100);
+        Assert.assertEquals("not equal", payload3, kq.peek());
+        Assert.assertEquals("not equal", payload3, kq.remove());
+        Thread.sleep(100);
 
-		String payload3 = Long.toString(System.currentTimeMillis());
+        Assert.assertNull("not null", kq.poll());
+    }
 
-		Assert.assertNull("not null", kq.peek());
+    @Test
+    public void testKeptNonPrimitiveQueue() throws Exception {
+        KeptQueue<SerializablePerson> kq = new KeptQueue<SerializablePerson>(
+                this.keeper, parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		kq.offer(payload1);
+        SerializablePerson person1 = new SerializablePerson();
+        person1.age = 50;
+        person1.name = "person1";
+        SerializablePerson person2 = new SerializablePerson();
+        person2.age = 60;
+        person2.name = "person2";
+        SerializablePerson person3 = new SerializablePerson();
+        person3.age = 70;
+        person3.name = "person3";
 
-		Thread.sleep(100);
+        Assert.assertNull("not null", kq.peek());
 
-		kq.offer(payload2);
+        kq.offer(person1);
+        Thread.sleep(100);
 
-		Thread.sleep(100);
+        kq.offer(person2);
+        Thread.sleep(100);
 
-		kq.offer(payload3);
+        kq.offer(person3);
+        Thread.sleep(100);
 
-		Thread.sleep(100);
+        Assert.assertEquals("not equal", person1, kq.peek());
+        Assert.assertEquals("not equal", person1, kq.remove());
+        Thread.sleep(100);
 
-		Assert.assertEquals("not equal", payload1, kq.peek());
-		Assert.assertEquals("not equal", payload1, kq.remove());
+        Assert.assertEquals("not equal", person2, kq.element());
+        Assert.assertEquals("not equal", person2, kq.poll());
+        Thread.sleep(100);
 
-		Thread.sleep(100);
+        Assert.assertEquals("not equal", person3, kq.peek());
+        Assert.assertEquals("not equal", person3, kq.remove());
+        Thread.sleep(100);
 
-		Assert.assertEquals("not equal", payload2, kq.element());
-		Assert.assertEquals("not equal", payload2, kq.poll());
+        Assert.assertNull("not null", kq.poll());
+    }
 
-		Thread.sleep(100);
+    @SuppressWarnings("unchecked")
+    @Test(expected = NoSuchElementException.class)
+    public void testKeptQueueEmptyElement() throws IOException,
+            KeeperException, InterruptedException {
+        KeptQueue kq = new KeptQueue(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-		Assert.assertEquals("not equal", payload3, kq.peek());
-		Assert.assertEquals("not equal", payload3, kq.remove());
+        kq.element();
+    }
 
-		Thread.sleep(100);
+    @SuppressWarnings("unchecked")
+    @Test(expected = NoSuchElementException.class)
+    public void testKeptQueueEmptyRemove() throws IOException, KeeperException,
+            InterruptedException {
+        KeptQueue kq = new KeptQueue(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-		Assert.assertNull("not null", kq.poll());
-	}
-
-	@Test(expected = NoSuchElementException.class)
-	public void testKeptQueueEmptyElement() throws IOException, KeeperException, InterruptedException {
-		KeptQueue kq = new KeptQueue(this.keeper, TestKeptQueue.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-
-		kq.element();
-	}
-
-	@Test(expected = NoSuchElementException.class)
-	public void testKeptQueueEmptyRemove() throws IOException, KeeperException, InterruptedException {
-		KeptQueue kq = new KeptQueue(this.keeper, TestKeptQueue.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-
-		kq.remove();
-	}
+        kq.remove();
+    }
 }

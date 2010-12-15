@@ -18,128 +18,113 @@
 package net.killa.kept;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.ZooKeeper;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-public class TestKeptMap {
-	private static final String PARENT = "/testkeptmap";
+public class TestKeptMap extends BaseKeptUtil {
+    {
+        parent = "/testkeptmap";
+    }
 
-	private ZooKeeper keeper;
+    @Test
+    public void testKeptMap() throws IOException, KeeperException,
+            InterruptedException {
+        KeptMap s = new KeptMap(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-	@Before
-	public void before() throws IOException, InterruptedException, KeeperException {
-		CountDownLatch latch = new CountDownLatch(1);
+        // check to see that changes made to the map are reflected in the znode
+        String znode = Long.toString(System.currentTimeMillis());
+        String value = "lorem ipsum";
 
-		// FIXME: set up a zookeeper server in process
-		CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
-		watcher.setLatch(latch);
-		this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
-		if (!latch.await(5, TimeUnit.SECONDS))
-			throw new RuntimeException("unable to connect to server");
-	}
+        Assert.assertFalse(s.containsKey(znode));
 
-	@After
-	public void after() throws InterruptedException, KeeperException {
-		// delete the children
-		for (String s : this.keeper.getChildren(TestKeptMap.PARENT, false))
-			this.keeper.delete(TestKeptMap.PARENT + '/' + s, -1);
-		// close the client
-		this.keeper.close();
-	}
+        s.put(znode, value);
 
-	@Test
-	public void testKeptMap() throws IOException, KeeperException, InterruptedException {
-		KeptMap s = new KeptMap(this.keeper, TestKeptMap.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        Assert.assertNotNull(this.keeper.exists(parent + '/' + znode, null));
 
-		// check to see that changes made to the map are reflected in the znode
-		String znode = Long.toString(System.currentTimeMillis());
-		String value = "lorem ipsum";
+        this.keeper.delete(parent + '/' + znode, -1);
 
-		Assert.assertFalse(s.containsKey(znode));
+        // wait for it to take effect
+        Thread.sleep(100);
 
-		s.put(znode, value);
+        Assert.assertFalse(s.containsKey(znode));
 
-		Assert.assertNotNull(this.keeper.exists(TestKeptMap.PARENT + '/' + znode, null));
+        // check to see that changes on zookeeper are reflected in the map
+        znode = Long.toString(System.currentTimeMillis());
 
-		this.keeper.delete(TestKeptMap.PARENT + '/' + znode, -1);
+        Assert.assertFalse(s.containsKey(znode));
 
-		// wait for it to take effect
-		Thread.sleep(100);
+        this.keeper.create(parent + '/' + znode, value.getBytes(),
+                Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		Assert.assertFalse(s.containsKey(znode));
+        // wait for it to take effect
+        Thread.sleep(100);
 
-		// check to see that changes on zookeeper are reflected in the map
-		znode = Long.toString(System.currentTimeMillis());
+        Assert.assertTrue(s.containsKey(znode));
+        Assert.assertEquals(value, s.get(znode));
 
-		Assert.assertFalse(s.containsKey(znode));
+        s.remove(znode);
 
-		this.keeper.create(TestKeptMap.PARENT + '/' + znode, value.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        Assert.assertNull(this.keeper.exists(parent + '/' + znode, null));
+    }
 
-		// wait for it to take effect
-		Thread.sleep(100);
+    @Test
+    public void testKeptMapClear() throws IOException, KeeperException,
+            InterruptedException {
+        KeptMap km = new KeptMap(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-		Assert.assertTrue(s.containsKey(znode));
-		Assert.assertEquals(value, s.get(znode));
+        km.put("one", "value");
+        km.put("two", "value");
+        km.put("three", "value");
 
-		s.remove(znode);
+        // wait for it to take effect
+        Thread.sleep(100);
 
-		Assert.assertNull(this.keeper.exists(TestKeptMap.PARENT + '/' + znode, null));
-	}
+        Assert.assertTrue("map does not contain one", km.containsKey("one"));
+        Assert.assertTrue("map does not contain two", km.containsKey("two"));
+        Assert
+                .assertTrue("map does not contain three", km
+                        .containsKey("three"));
 
-	@Test
-	public void testKeptMapClear() throws IOException, KeeperException, InterruptedException {
-		KeptMap km = new KeptMap(this.keeper, TestKeptMap.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        km.clear();
 
-		km.put("one", "value");
-		km.put("two", "value");
-		km.put("three", "value");
+        // wait for it to take effect
+        Thread.sleep(100);
 
-		// wait for it to take effect
-		Thread.sleep(100);
+        Assert.assertTrue("map is not empty", km.isEmpty());
 
-		Assert.assertTrue("map does not contain one", km.containsKey("one"));
-		Assert.assertTrue("map does not contain two", km.containsKey("two"));
-		Assert.assertTrue("map does not contain three", km.containsKey("three"));
+        Assert.assertEquals("map is not empty", 0, km.size());
+    }
 
-		km.clear();
+    @Test
+    public void testKeptMapOverwrite() throws KeeperException,
+            InterruptedException {
+        KeptMap km = new KeptMap(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+                CreateMode.EPHEMERAL);
 
-		// wait for it to take effect
-		Thread.sleep(100);
+        Assert.assertNull("value not previously null", km.put("one", "value"));
 
-		Assert.assertTrue("map is not empty", km.isEmpty());
+        // wait for it to take effect
+        Thread.sleep(100);
 
-		Assert.assertEquals("map is not empty", 0, km.size());
-	}
+        Assert.assertEquals("map does not contain one", "value", km.get("one"));
 
-	@Test
-	public void testKeptMapOverwrite() throws KeeperException, InterruptedException {
-		KeptMap km = new KeptMap(this.keeper, TestKeptMap.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        Assert.assertEquals("value not previously equal", "value", km.put(
+                "one", "eulav"));
 
-		Assert.assertNull("value not previously null", km.put("one", "value"));
+        // wait for it to take effect
+        Thread.sleep(100);
 
-		// wait for it to take effect
-		Thread.sleep(100);
+        Assert.assertEquals("map does not contain one", "eulav", km.get("one"));
 
-		Assert.assertEquals("map does not contain one", "value", km.get("one"));
-
-		Assert.assertEquals("value not previously equal", "value", km.put("one", "eulav"));
-
-		// wait for it to take effect
-		Thread.sleep(100);
-
-		Assert.assertEquals("map does not contain one", "eulav", km.get("one"));
-
-		// try again, but run to win the race condition in synchronize
-		Assert.assertNull("value not previously null", km.put("two", "value"));
-		Assert.assertEquals("value not previously equal", "value", km.put("two", "eulav"));
-	}
+        // try again, but run to win the race condition in synchronize
+        Assert.assertNull("value not previously null", km.put("two", "value"));
+        Assert.assertEquals("value not previously equal", "value", km.put(
+                "two", "eulav"));
+    }
 }

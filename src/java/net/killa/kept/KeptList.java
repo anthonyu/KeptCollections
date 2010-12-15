@@ -17,6 +17,7 @@
  */
 package net.killa.kept;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,157 +38,192 @@ import org.apache.zookeeper.data.ACL;
  * may be a delay between modifying the list and it reflecting the change.
  * 
  */
-public class KeptList extends KeptCollection implements List<String>, Synchronizable {
-	private final SynchronizingWatcher watcher;
+public class KeptList<T> extends KeptCollection<T> implements List<T>,
+        Synchronizable {
+    private final SynchronizingWatcher watcher;
 
-	private final String znode;
-	private final ZooKeeper keeper;
+    private final String znode;
+    private final ZooKeeper keeper;
 
-	private final ArrayList<String> indices;
+    private final List<String> indices;
 
-	/**
-	 * Construct a KeptList.
-	 * 
-	 * @param keeper
-	 *            A {@link ZooKeeper} that is synchronized with
-	 * 
-	 * @param znode
-	 *            A {@link String} containing the znode whose children will be
-	 *            members of the set
-	 * 
-	 * @param acl
-	 *            A {@link List} of {@link ACL} containing the access control
-	 *            lists for child node creation
-	 * 
-	 * @param mode
-	 *            A {@link CreateMode} representing the persistence of created
-	 *            child nodes
-	 * 
-	 * @throws KeeperException
-	 * @throws InterruptedException
-	 */
-	public KeptList(ZooKeeper keeper, String znode, List<ACL> acl, CreateMode mode) throws KeeperException, InterruptedException {
-		super(keeper, znode, acl, mode);
+    /**
+     * Construct a KeptList.
+     * 
+     * @param keeper
+     *            A {@link ZooKeeper} that is synchronized with
+     * 
+     * @param znode
+     *            A {@link String} containing the znode whose children will be
+     *            members of the set
+     * 
+     * @param acl
+     *            A {@link List} of {@link ACL} containing the access control
+     *            lists for child node creation
+     * 
+     * @param mode
+     *            A {@link CreateMode} representing the persistence of created
+     *            child nodes
+     * 
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    public KeptList(ZooKeeper keeper, String znode, List<ACL> acl,
+            CreateMode mode) throws KeeperException, InterruptedException {
+        super(keeper, znode, acl, mode);
 
-		this.znode = znode;
-		this.keeper = keeper;
+        this.znode = znode;
+        this.keeper = keeper;
 
-		this.indices = new ArrayList<String>();
+        this.indices = new ArrayList<String>();
 
-		this.watcher = new SynchronizingWatcher(this);
+        this.watcher = new SynchronizingWatcher(this);
 
-		this.synchronize();
-	}
+        this.synchronize();
+    }
 
-	@Override
-	public void synchronize() throws KeeperException, InterruptedException {
-		if (this.indices != null)
-			synchronized (this.elements) {
-				try {
-					// clear out the cache and reload it
-					this.indices.clear();
-					this.elements.clear();
+    @SuppressWarnings("unchecked")
+    @Override
+    public void synchronize() throws KeeperException, InterruptedException {
+        if (this.indices != null)
+            synchronized (this.elements) {
+                try {
+                    // clear out the cache and reload it
+                    this.indices.clear();
+                    this.elements.clear();
 
-					List<String> children = this.keeper.getChildren(this.znode, this.watcher);
+                    List<String> children = this.keeper.getChildren(this.znode,
+                            this.watcher);
 
-					Collections.sort(children);
+                    Collections.sort(children);
 
-					for (String s : children) {
-						this.indices.add((this.znode + '/' + s));
-						this.elements.add(new String(this.keeper.getData(this.znode + '/' + s, this.watcher, null)));
-					}
-				} catch (KeeperException.SessionExpiredException e) {
-					// ignore it
-				}
-			}
-	}
+                    for (String s : children) {
+                        this.indices.add((this.znode + '/' + s));
+                        this.elements.add((T) Transformer
+                                .bytesToObject(this.keeper.getData(this.znode
+                                        + '/' + s, this.watcher, null)));
+                    }
+                } catch (KeeperException.SessionExpiredException e) {
+                    throw new RuntimeException(e.getClass().getSimpleName()
+                            + " caught", e);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e.getClass().getSimpleName()
+                            + " caught", e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e.getClass().getSimpleName()
+                            + " caught", e);
+                }
+            }
+    }
 
-	protected boolean removeUnsynchronized(int i) throws InterruptedException, KeeperException {
-		this.keeper.delete(this.indices.get(i), -1);
+    protected boolean removeUnsynchronized(int i) throws InterruptedException,
+            KeeperException {
+        this.keeper.delete(this.indices.get(i), -1);
 
-		return true;
-	}
+        return true;
+    }
 
-	/** Not supported */
-	@Override
-	public void add(int index, String element) {
-		throw new UnsupportedOperationException();
-	}
+    /** Not supported */
+    @Override
+    public void add(int index, T element) {
+        throw new UnsupportedOperationException();
+    }
 
-	/** Not supported */
-	@Override
-	public boolean addAll(int index, Collection<? extends String> c) {
-		throw new UnsupportedOperationException();
-	}
+    /** Not supported */
+    @Override
+    public boolean addAll(int index, Collection<? extends T> c) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public String get(int index) {
-		if (index >= this.size())
-			throw new IndexOutOfBoundsException(index + " >= " + this.size());
+    @Override
+    public T get(int index) {
+        if (index >= this.size())
+            throw new IndexOutOfBoundsException(index + " >= " + this.size());
 
-		return this.elements.get(index);
-	}
+        return this.elements.get(index);
+    }
 
-	@Override
-	public int indexOf(Object o) {
-		return this.elements.indexOf(o);
-	}
+    @Override
+    public int indexOf(Object o) {
+        return this.elements.indexOf(o);
+    }
 
-	@Override
-	public int lastIndexOf(Object o) {
-		return this.elements.lastIndexOf(o);
-	}
+    @Override
+    public int lastIndexOf(Object o) {
+        return this.elements.lastIndexOf(o);
+    }
 
-	@Override
-	public ListIterator<String> listIterator() {
-		return this.elements.listIterator();
-	}
+    @Override
+    public ListIterator<T> listIterator() {
+        return this.elements.listIterator();
+    }
 
-	@Override
-	public ListIterator<String> listIterator(int index) {
-		return this.elements.listIterator(index);
-	}
+    @Override
+    public ListIterator<T> listIterator(int index) {
+        return this.elements.listIterator(index);
+    }
 
-	@Override
-	public String remove(int index) {
-		synchronized (this.elements) {
-			if (index >= this.size())
-				throw new IndexOutOfBoundsException(index + " >= " + this.size());
+    @SuppressWarnings("unchecked")
+    @Override
+    public T remove(int index) {
+        synchronized (this.elements) {
+            if (index >= this.size())
+                throw new IndexOutOfBoundsException(index + " >= "
+                        + this.size());
 
-			try {
-				String s = new String(this.keeper.getData(this.indices.get(index), false, null));
-				this.removeUnsynchronized(index);
-				return s;
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			} catch (KeeperException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			}
-		}
-	}
+            try {
+                T previous = (T) Transformer.bytesToObject(this.keeper.getData(
+                        this.indices.get(index), false, null));
+                this.removeUnsynchronized(index);
+                return previous;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e.getClass().getSimpleName()
+                        + " caught", e);
+            } catch (KeeperException e) {
+                throw new RuntimeException(e.getClass().getSimpleName()
+                        + " caught", e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e.getClass().getSimpleName()
+                        + " caught", e);
+            } catch (IOException e) {
+                throw new RuntimeException(e.getClass().getSimpleName()
+                        + " caught", e);
+            }
+        }
+    }
 
-	@Override
-	public String set(int index, String element) {
-		if (index >= this.size())
-			throw new IndexOutOfBoundsException(index + " >= " + this.size());
+    @SuppressWarnings("unchecked")
+    @Override
+    public T set(int index, T element) {
+        if (index >= this.size())
+            throw new IndexOutOfBoundsException(index + " >= " + this.size());
 
-		if (element == null)
-			throw new IllegalArgumentException("nulls not allowed");
+        if (element == null)
+            throw new IllegalArgumentException("nulls not allowed");
 
-		try {
-			String path = this.indices.get(index);
-			String s = new String(this.keeper.getData(path, false, null));
-			this.keeper.setData(path, element.getBytes(), -1);
-			return s;
-		} catch (KeeperException e) {
-			throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-		}
-	}
+        try {
+            String path = this.indices.get(index);
+            T previous = (T) Transformer.bytesToObject(this.keeper.getData(
+                    path, false, null));
+            this.keeper.setData(path, Transformer.objectToBytes(element), -1);
+            return previous;
+        } catch (KeeperException e) {
+            throw new RuntimeException(
+                    e.getClass().getSimpleName() + " caught", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(
+                    e.getClass().getSimpleName() + " caught", e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(
+                    e.getClass().getSimpleName() + " caught", e);
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    e.getClass().getSimpleName() + " caught", e);
+        }
+    }
 
-	@Override
-	public List<String> subList(int fromIndex, int toIndex) {
-		return this.elements.subList(fromIndex, toIndex);
-	}
+    @Override
+    public List<T> subList(int fromIndex, int toIndex) {
+        return this.elements.subList(fromIndex, toIndex);
+    }
 }

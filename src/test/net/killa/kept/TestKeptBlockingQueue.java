@@ -17,84 +17,48 @@
  */
 package net.killa.kept;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.ZooKeeper;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-public class TestKeptBlockingQueue {
-	private static final String PARENT = "/testkeptqueue";
+public class TestKeptBlockingQueue extends BaseKeptUtil {
+    {
+        parent = "/testkeptqueue";
+    }
 
-	private ZooKeeper keeper;
+    @Test
+    public void testKeptStringQueue() throws Exception {
+        KeptBlockingQueue<String> kbq = new KeptBlockingQueue<String>(
+                this.keeper, parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-	@Before
-	public void before() throws IOException, InterruptedException, KeeperException {
-		CountDownLatch latch = new CountDownLatch(1);
+        Assert.assertNull(kbq.poll(1, TimeUnit.SECONDS));
 
-		// FIXME: set up a zookeeper server in process
-		CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
-		watcher.setLatch(latch);
-		this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
-		if (!latch.await(5, TimeUnit.SECONDS))
-			throw new RuntimeException("unable to connect to server");
-	}
+        String payload = Long.toString(System.currentTimeMillis());
+        kbq.put(payload);
+        Thread.sleep(100);
 
-	@After
-	public void after() throws InterruptedException, KeeperException {
-		for (String s : this.keeper.getChildren(TestKeptBlockingQueue.PARENT, false))
-			this.keeper.delete(TestKeptBlockingQueue.PARENT + '/' + s, -1);
-		this.keeper.close();
-	}
+        Assert.assertEquals("not equal", payload, kbq.take());
 
-	@Test
-	public void testKeptQueue() throws IOException, KeeperException, InterruptedException {
-		KeptBlockingQueue kbq = new KeptBlockingQueue(this.keeper, TestKeptBlockingQueue.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        List<String> source = new ArrayList<String>();
+        source.add(payload);
+        source.add(payload);
+        source.add(payload);
 
-		Assert.assertNull(kbq.poll(1, TimeUnit.SECONDS));
+        for (String s : source)
+            kbq.offer(s, Long.MAX_VALUE, TimeUnit.DAYS);
 
-		String payload = Long.toString(System.currentTimeMillis());
+        Thread.sleep(100);
 
-		kbq.put(payload);
+        List<String> sink = new ArrayList<String>();
+        kbq.drainTo(sink);
+        Thread.sleep(100);
 
-		Thread.sleep(100);
-
-		Assert.assertEquals("not equal", payload, kbq.take());
-
-		List<String> source = new ArrayList<String>();
-
-		source.add(payload);
-
-		Thread.sleep(100);
-
-		source.add(payload);
-
-		Thread.sleep(100);
-
-		source.add(payload);
-
-		for (String s : source)
-			kbq.offer(s, Long.MAX_VALUE, TimeUnit.DAYS);
-
-		Thread.sleep(100);
-
-		List<String> sink = new ArrayList<String>();
-
-		kbq.drainTo(sink);
-
-		Thread.sleep(100);
-
-		Assert.assertEquals("not equal", source, sink);
-
-		Assert.assertEquals("wrong size", 0, kbq.size());
-	}
+        Assert.assertEquals("not equal", source, sink);
+        Assert.assertEquals("wrong size", 0, kbq.size());
+    }
 }
