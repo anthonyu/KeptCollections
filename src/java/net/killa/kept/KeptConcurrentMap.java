@@ -36,129 +36,146 @@ import org.apache.zookeeper.data.Stat;
  * the change.
  * 
  */
-public class KeptConcurrentMap extends KeptMap implements ConcurrentMap<String, String>, Synchronizable {
-	private final ZooKeeper keeper;
-	private final String znode;
-	private final List<ACL> acl;
-	private final CreateMode createMode;
+public class KeptConcurrentMap extends KeptMap implements
+	ConcurrentMap<String, String>, Synchronizable {
+    private final ZooKeeper keeper;
+    private final String znode;
+    private final List<ACL> acl;
+    private final CreateMode createMode;
 
-	/**
-	 * Construct a KeptConcurrentMap.
-	 * 
-	 * @param keeper
-	 *            A {@link ZooKeeper} that is synchronized with
-	 * 
-	 * @param znode
-	 *            A {@link String} containing the znode whose children will be
-	 *            members of the set
-	 * 
-	 * @param acl
-	 *            A {@link List} of {@link ACL} containing the access control
-	 *            lists for child node creation
-	 * 
-	 * @param createMode
-	 *            A {@link CreateMode} representing the persistence of created
-	 *            child nodes
-	 * 
-	 * @throws KeeperException
-	 * @throws InterruptedException
-	 */
-	public KeptConcurrentMap(ZooKeeper keeper, String znode, List<ACL> acl, CreateMode createMode) throws KeeperException, InterruptedException {
-		super(keeper, znode, acl, createMode);
+    /**
+     * Construct a KeptConcurrentMap.
+     * 
+     * @param keeper
+     *            A {@link ZooKeeper} that is synchronized with
+     * 
+     * @param znode
+     *            A {@link String} containing the znode whose children will be
+     *            members of the set
+     * 
+     * @param acl
+     *            A {@link List} of {@link ACL} containing the access control
+     *            lists for child node creation
+     * 
+     * @param createMode
+     *            A {@link CreateMode} representing the persistence of created
+     *            child nodes
+     * 
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    public KeptConcurrentMap(ZooKeeper keeper, String znode, List<ACL> acl,
+	    CreateMode createMode) throws KeeperException, InterruptedException {
+	super(keeper, znode, acl, createMode);
 
-		this.keeper = keeper;
-		this.znode = znode;
-		this.acl = acl;
-		this.createMode = createMode;
+	this.keeper = keeper;
+	this.znode = znode;
+	this.acl = acl;
+	this.createMode = createMode;
+    }
+
+    @Override
+    public String putIfAbsent(String key, String value) {
+	synchronized (this.map) {
+	    try {
+		this.keeper.create(this.znode + '/' + key, value.getBytes(),
+			this.acl, this.createMode);
+
+		return null;
+	    } catch (KeeperException.NodeExistsException e) {
+		return this.get(key);
+	    } catch (KeeperException e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
+	    } catch (InterruptedException e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
+	    }
 	}
+    }
 
-	@Override
-	public String putIfAbsent(String key, String value) {
-		synchronized (this.map) {
-			try {
-				this.keeper.create(this.znode + '/' + key, value.getBytes(), this.acl, this.createMode);
+    @Override
+    public boolean remove(Object key, Object value) {
+	synchronized (this.map) {
+	    try {
+		Stat stat = new Stat();
 
-				return null;
-			} catch (KeeperException.NodeExistsException e) {
-				return this.get(key);
-			} catch (KeeperException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			}
+		String string = new String(this.keeper.getData(this.znode + '/'
+			+ key, true, stat));
+
+		if (string.equals(value.toString())) {
+		    this.keeper.delete(this.znode + '/' + key,
+			    stat.getVersion());
+
+		    return true;
+		} else {
+		    return false;
 		}
+	    } catch (KeeperException.NoNodeException e) {
+		return false;
+	    } catch (KeeperException.BadVersionException e) {
+		return false;
+	    } catch (KeeperException e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
+	    } catch (InterruptedException e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
+	    }
 	}
+    }
 
-	@Override
-	public boolean remove(Object key, Object value) {
-		synchronized (this.map) {
-			try {
-				Stat stat = new Stat();
+    @Override
+    public String replace(String key, String value) {
+	synchronized (this.map) {
+	    try {
+		String data = new String(this.keeper.getData(this.znode + '/'
+			+ key, true, null));
 
-				String string = new String(this.keeper.getData(this.znode + '/' + key, true, stat));
+		this.keeper.setData(this.znode + '/' + key, value.getBytes(),
+			-1);
 
-				if (string.equals(value.toString())) {
-					this.keeper.delete(this.znode + '/' + key, stat.getVersion());
+		return data;
+	    } catch (KeeperException.NoNodeException e) {
+		return null;
+	    } catch (KeeperException e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
+	    } catch (InterruptedException e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
+	    }
+	}
+    }
 
-					return true;
-				} else {
-					return false;
-				}
-			} catch (KeeperException.NoNodeException e) {
-				return false;
-			} catch (KeeperException.BadVersionException e) {
-				return false;
-			} catch (KeeperException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			}
+    @Override
+    public boolean replace(String key, String oldValue, String newValue) {
+	synchronized (this.map) {
+	    try {
+		Stat stat = new Stat();
+
+		String data = new String(this.keeper.getData(this.znode + '/'
+			+ key, true, stat));
+
+		if (data.equals(oldValue.toString())) {
+		    this.keeper.setData(this.znode + '/' + key,
+			    newValue.getBytes(), stat.getVersion());
+
+		    return true;
+		} else {
+		    return false;
 		}
+	    } catch (KeeperException.NoNodeException e) {
+		return false;
+	    } catch (KeeperException.BadVersionException e) {
+		return false;
+	    } catch (KeeperException e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
+	    } catch (InterruptedException e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
+	    }
 	}
-
-	@Override
-	public String replace(String key, String value) {
-		synchronized (this.map) {
-			try {
-				String data = new String(this.keeper.getData(this.znode + '/' + key, true, null));
-
-				this.keeper.setData(this.znode + '/' + key, value.getBytes(), -1);
-
-				return data;
-			} catch (KeeperException.NoNodeException e) {
-				return null;
-			} catch (KeeperException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			}
-		}
-	}
-
-	@Override
-	public boolean replace(String key, String oldValue, String newValue) {
-		synchronized (this.map) {
-			try {
-				Stat stat = new Stat();
-
-				String data = new String(this.keeper.getData(this.znode + '/' + key, true, stat));
-
-				if (data.equals(oldValue.toString())) {
-					this.keeper.setData(this.znode + '/' + key, newValue.getBytes(), stat.getVersion());
-
-					return true;
-				} else {
-					return false;
-				}
-			} catch (KeeperException.NoNodeException e) {
-				return false;
-			} catch (KeeperException.BadVersionException e) {
-				return false;
-			} catch (KeeperException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-			}
-		}
-	}
+    }
 }

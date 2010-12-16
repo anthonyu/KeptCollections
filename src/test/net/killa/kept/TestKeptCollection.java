@@ -29,156 +29,172 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class TestKeptCollection extends BaseKeptUtil {
-	{
-		this.parent = "/testkeptcollection";
+    {
+	this.parent = "/testkeptcollection";
+    }
+
+    @Test
+    public void testKeptCollection() throws IOException, KeeperException,
+	    InterruptedException {
+	KeptCollection<String> kc = new KeptCollection<String>(this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+
+	// check to see that changes made to the collection are reflected in the
+	// znode
+	String payload = Long.toString(System.currentTimeMillis());
+	Assert.assertFalse(kc.contains(payload));
+
+	kc.add(payload);
+
+	String znode = null;
+	for (String node : this.keeper.getChildren(this.parent, false)) {
+	    if (this.keeper.exists(this.parent + '/' + node, null) != null) {
+		znode = node;
+		break;
+	    }
 	}
+	Assert.assertNotNull("added entry does not exist in zookeeper", znode);
 
-	@Test
-	public void testKeptCollection() throws IOException, KeeperException, InterruptedException {
-		KeptCollection<String> kc = new KeptCollection<String>(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	this.keeper.delete(this.parent + '/' + znode, -1);
 
-		// check to see that changes made to the collection are reflected in the
-		// znode
-		String payload = Long.toString(System.currentTimeMillis());
-		Assert.assertFalse(kc.contains(payload));
+	// wait for it to take effect
+	Thread.sleep(100);
 
-		kc.add(payload);
+	Assert.assertFalse(kc.contains(payload));
 
-		String znode = null;
-		for (String node : this.keeper.getChildren(this.parent, false)) {
-			if (this.keeper.exists(this.parent + '/' + node, null) != null) {
-				znode = node;
-				break;
-			}
-		}
-		Assert.assertNotNull("added entry does not exist in zookeeper", znode);
+	// check to see that changes on zookeeper are reflected in the
+	// collection
+	payload = Long.toString(System.currentTimeMillis());
 
-		this.keeper.delete(this.parent + '/' + znode, -1);
+	Assert.assertFalse(kc.contains(payload));
 
-		// wait for it to take effect
-		Thread.sleep(100);
+	String fullPath = this.keeper.create(this.parent + "/node-",
+		Transformer.objectToBytes(payload), Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
-		Assert.assertFalse(kc.contains(payload));
+	// wait for it to take effect
+	Thread.sleep(100);
 
-		// check to see that changes on zookeeper are reflected in the
-		// collection
-		payload = Long.toString(System.currentTimeMillis());
+	Assert.assertTrue(kc.contains(payload));
 
-		Assert.assertFalse(kc.contains(payload));
+	Assert.assertTrue("not there", kc.remove(payload));
 
-		String fullPath = this.keeper.create(this.parent + "/node-", Transformer.objectToBytes(payload), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	Thread.sleep(100);
 
-		// wait for it to take effect
-		Thread.sleep(100);
+	Assert.assertNull("still there", this.keeper.exists(fullPath, null));
 
-		Assert.assertTrue(kc.contains(payload));
+	Assert.assertFalse("still there", kc.remove(payload));
+    }
 
-		Assert.assertTrue("not there", kc.remove(payload));
+    @Test
+    public void testKeptCollectionClear() throws IOException, KeeperException,
+	    InterruptedException {
+	KeptCollection<String> ks = new KeptCollection<String>(this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		Thread.sleep(100);
+	ks.add("one");
+	ks.add("two");
+	ks.add("three");
 
-		Assert.assertNull("still there", this.keeper.exists(fullPath, null));
+	// wait for it to take effect
+	Thread.sleep(100);
 
-		Assert.assertFalse("still there", kc.remove(payload));
-	}
+	Assert.assertTrue("collection does not contain one", ks.contains("one"));
+	Assert.assertTrue("collection does not contain two", ks.contains("two"));
+	Assert.assertTrue("collection does not contain three",
+		ks.contains("three"));
 
-	@Test
-	public void testKeptCollectionClear() throws IOException, KeeperException, InterruptedException {
-		KeptCollection<String> ks = new KeptCollection<String>(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	ks.clear();
 
-		ks.add("one");
-		ks.add("two");
-		ks.add("three");
+	// wait for it to take effect
+	Thread.sleep(100);
 
-		// wait for it to take effect
-		Thread.sleep(100);
+	Assert.assertTrue("collection is not empty", ks.isEmpty());
 
-		Assert.assertTrue("collection does not contain one", ks.contains("one"));
-		Assert.assertTrue("collection does not contain two", ks.contains("two"));
-		Assert.assertTrue("collection does not contain three", ks.contains("three"));
+	Assert.assertEquals("collection is not empty", 0, ks.size());
+    }
 
-		ks.clear();
+    @Test
+    public void testKeptCollectionAll() throws IOException, KeeperException,
+	    InterruptedException {
+	Collection<String> hs = new ArrayList<String>();
 
-		// wait for it to take effect
-		Thread.sleep(100);
+	hs.add("one");
+	hs.add("two");
+	hs.add("three");
 
-		Assert.assertTrue("collection is not empty", ks.isEmpty());
+	KeptCollection<String> s = new KeptCollection<String>(this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		Assert.assertEquals("collection is not empty", 0, ks.size());
-	}
+	s.addAll(hs);
 
-	@Test
-	public void testKeptCollectionAll() throws IOException, KeeperException, InterruptedException {
-		Collection<String> hs = new ArrayList<String>();
+	// wait for it to take effect
+	Thread.sleep(100);
 
-		hs.add("one");
-		hs.add("two");
-		hs.add("three");
+	Assert.assertTrue("collection does not contain all", s.containsAll(hs));
 
-		KeptCollection<String> s = new KeptCollection<String>(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	hs.add("four");
 
-		s.addAll(hs);
+	Assert.assertFalse("collection contains all", s.containsAll(hs));
 
-		// wait for it to take effect
-		Thread.sleep(100);
+	Assert.assertTrue("collection does not contain all", s.removeAll(hs));
 
-		Assert.assertTrue("collection does not contain all", s.containsAll(hs));
+	Thread.sleep(100);
 
-		hs.add("four");
+	Assert.assertTrue("collection is not empty", s.isEmpty());
+	Assert.assertEquals("collection is not empty", 0, s.size());
+    }
 
-		Assert.assertFalse("collection contains all", s.containsAll(hs));
+    @Test
+    public void testKeptCollectionRetainAll() throws IOException,
+	    KeeperException, InterruptedException {
+	Collection<String> al1 = new ArrayList<String>();
 
-		Assert.assertTrue("collection does not contain all", s.removeAll(hs));
+	al1.add("one");
+	al1.add("two");
+	al1.add("three");
 
-		Thread.sleep(100);
+	Collection<String> al2 = new ArrayList<String>();
 
-		Assert.assertTrue("collection is not empty", s.isEmpty());
-		Assert.assertEquals("collection is not empty", 0, s.size());
-	}
+	al2.add("two");
+	al2.add("three");
+	al2.add("four");
 
-	@Test
-	public void testKeptCollectionRetainAll() throws IOException, KeeperException, InterruptedException {
-		Collection<String> al1 = new ArrayList<String>();
+	KeptCollection<String> kc = new KeptCollection<String>(this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		al1.add("one");
-		al1.add("two");
-		al1.add("three");
+	kc.addAll(al1);
 
-		Collection<String> al2 = new ArrayList<String>();
+	// wait for it to take effect
+	Thread.sleep(100);
 
-		al2.add("two");
-		al2.add("three");
-		al2.add("four");
+	kc.retainAll(al2);
+	al1.retainAll(al2);
 
-		KeptCollection<String> kc = new KeptCollection<String>(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	// wait for it to take effect
+	Thread.sleep(100);
 
-		kc.addAll(al1);
+	Assert.assertTrue("collection does not contain all", kc.contains("two"));
+	Assert.assertTrue("collection does not contain all",
+		kc.contains("three"));
+	Assert.assertEquals("collection is the wrong size", 2, kc.size());
+    }
 
-		// wait for it to take effect
-		Thread.sleep(100);
+    @Test(expected = IllegalArgumentException.class)
+    public void testKeptCollectionAddNull() throws IOException,
+	    KeeperException, InterruptedException {
+	KeptCollection<Object> kc = new KeptCollection<Object>(this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		kc.retainAll(al2);
-		al1.retainAll(al2);
+	kc.add(null);
+    }
 
-		// wait for it to take effect
-		Thread.sleep(100);
+    @Test(expected = IllegalArgumentException.class)
+    public void testKeptCollectionAddAllNull() throws IOException,
+	    KeeperException, InterruptedException {
+	KeptCollection<String> kc = new KeptCollection<String>(this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-		Assert.assertTrue("collection does not contain all", kc.contains("two"));
-		Assert.assertTrue("collection does not contain all", kc.contains("three"));
-		Assert.assertEquals("collection is the wrong size", 2, kc.size());
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testKeptCollectionAddNull() throws IOException, KeeperException, InterruptedException {
-		KeptCollection<Object> kc = new KeptCollection<Object>(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-
-		kc.add(null);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testKeptCollectionAddAllNull() throws IOException, KeeperException, InterruptedException {
-		KeptCollection<String> kc = new KeptCollection<String>(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-
-		kc.addAll(Arrays.asList(new String[] { null }));
-	}
+	kc.addAll(Arrays.asList(new String[] { null }));
+    }
 }

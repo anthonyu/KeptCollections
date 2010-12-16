@@ -28,11 +28,11 @@ import org.apache.zookeeper.ZooKeeper;
  * 
  */
 interface Synchronizable {
-	/**
-	 * Synchronize the set with the {@link ZooKeeper} backing store.
-	 * 
-	 * @throws KeeperException
-	 * @throws InterruptedException
-	 */
-	void synchronize() throws KeeperException, InterruptedException;
+    /**
+     * Synchronize the set with the {@link ZooKeeper} backing store.
+     * 
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    void synchronize() throws KeeperException, InterruptedException;
 }

@@ -24,29 +24,30 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 public class TransformerTest {
-	@Test
-	public void testSerDeser() throws Exception {
-		SerializablePerson toFlatten = new SerializablePerson();
-		toFlatten.name = "testName";
-		toFlatten.age = 300;
-		String string = Transformer.objectToString(toFlatten);
-		SerializablePerson deflattened = (SerializablePerson) Transformer.stringToObject(string);
-		Assert.assertEquals(toFlatten.name, deflattened.name);
-		Assert.assertEquals(toFlatten.age, deflattened.age);
-	}
+    @Test
+    public void testSerDeser() throws Exception {
+	SerializablePerson toFlatten = new SerializablePerson();
+	toFlatten.name = "testName";
+	toFlatten.age = 300;
+	String string = Transformer.objectToString(toFlatten);
+	SerializablePerson deflattened = (SerializablePerson) Transformer
+		.stringToObject(string);
+	Assert.assertEquals(toFlatten.name, deflattened.name);
+	Assert.assertEquals(toFlatten.age, deflattened.age);
+    }
 
-	@Test(expected = NotSerializableException.class)
-	public void testSerDeserNonserializable() throws Exception {
-		TestNonserializableObject toFlatten = new TestNonserializableObject();
-		toFlatten.name = "testName";
-		toFlatten.age = 300;
-		Transformer.objectToString(toFlatten);
-	}
+    @Test(expected = NotSerializableException.class)
+    public void testSerDeserNonserializable() throws Exception {
+	TestNonserializableObject toFlatten = new TestNonserializableObject();
+	toFlatten.name = "testName";
+	toFlatten.age = 300;
+	Transformer.objectToString(toFlatten);
+    }
 
-	static class TestNonserializableObject {
-		@SuppressWarnings("unused")
-		private String name;
-		@SuppressWarnings("unused")
-		private int age;
-	}
+    static class TestNonserializableObject {
+	@SuppressWarnings("unused")
+	private String name;
+	@SuppressWarnings("unused")
+	private int age;
+    }
 }

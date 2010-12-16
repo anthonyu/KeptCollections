@@ -31,93 +31,103 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestKeptConcurrentMap {
-	private static final String PARENT = "/testkeptconcurrentmap";
+    private static final String PARENT = "/testkeptconcurrentmap";
 
-	private ZooKeeper keeper;
+    private ZooKeeper keeper;
 
-	@Before
-	public void before() throws IOException, InterruptedException, KeeperException {
-		CountDownLatch latch = new CountDownLatch(1);
+    @Before
+    public void before() throws IOException, InterruptedException,
+	    KeeperException {
+	CountDownLatch latch = new CountDownLatch(1);
 
-		// FIXME: set up a zookeeper server in process
-		CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
-		watcher.setLatch(latch);
-		this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
-		if (!latch.await(5, TimeUnit.SECONDS))
-			throw new RuntimeException("unable to connect to server");
-	}
+	// FIXME: set up a zookeeper server in process
+	CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
+	watcher.setLatch(latch);
+	this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
+	if (!latch.await(5, TimeUnit.SECONDS))
+	    throw new RuntimeException("unable to connect to server");
+    }
 
-	@After
-	public void after() throws InterruptedException, KeeperException {
-		// delete the children
-		for (String s : this.keeper.getChildren(TestKeptConcurrentMap.PARENT, false))
-			this.keeper.delete(TestKeptConcurrentMap.PARENT + '/' + s, -1);
-		// close the client
-		this.keeper.close();
-	}
+    @After
+    public void after() throws InterruptedException, KeeperException {
+	// delete the children
+	for (String s : this.keeper.getChildren(TestKeptConcurrentMap.PARENT,
+		false))
+	    this.keeper.delete(TestKeptConcurrentMap.PARENT + '/' + s, -1);
+	// close the client
+	this.keeper.close();
+    }
 
-	@Test
-	public void testKeptConcurrentMap() throws IOException, KeeperException, InterruptedException {
-		KeptConcurrentMap kcm = new KeptConcurrentMap(this.keeper, TestKeptConcurrentMap.PARENT, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+    @Test
+    public void testKeptConcurrentMap() throws IOException, KeeperException,
+	    InterruptedException {
+	KeptConcurrentMap kcm = new KeptConcurrentMap(this.keeper,
+		TestKeptConcurrentMap.PARENT, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
-		String payload1 = Long.toString(System.currentTimeMillis());
+	String payload1 = Long.toString(System.currentTimeMillis());
 
-		Assert.assertNull("not null", kcm.putIfAbsent("test", payload1));
+	Assert.assertNull("not null", kcm.putIfAbsent("test", payload1));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		String payload2 = Long.toString(System.currentTimeMillis());
+	String payload2 = Long.toString(System.currentTimeMillis());
 
-		Assert.assertEquals("not equal", payload1, kcm.putIfAbsent("test", payload2));
+	Assert.assertEquals("not equal", payload1,
+		kcm.putIfAbsent("test", payload2));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertEquals("not equal", payload1, kcm.putIfAbsent("test", payload2));
+	Assert.assertEquals("not equal", payload1,
+		kcm.putIfAbsent("test", payload2));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertFalse("not false", kcm.remove("test", payload2));
+	Assert.assertFalse("not false", kcm.remove("test", payload2));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertTrue("not true", kcm.remove("test", payload1));
+	Assert.assertTrue("not true", kcm.remove("test", payload1));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertFalse("not false", kcm.remove("test", payload1));
+	Assert.assertFalse("not false", kcm.remove("test", payload1));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertNull("not null", kcm.replace("test", payload1));
+	Assert.assertNull("not null", kcm.replace("test", payload1));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertNull("not null", kcm.replace("test", payload1));
+	Assert.assertNull("not null", kcm.replace("test", payload1));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		kcm.put("test", payload1);
+	kcm.put("test", payload1);
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertEquals("not equal", payload1, kcm.replace("test", payload2));
+	Assert.assertEquals("not equal", payload1,
+		kcm.replace("test", payload2));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertEquals("not equal", payload2, kcm.get("test"));
+	Assert.assertEquals("not equal", payload2, kcm.get("test"));
 
-		Assert.assertTrue("not true", kcm.replace("test", payload2, payload1));
+	Assert.assertTrue("not true", kcm.replace("test", payload2, payload1));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertEquals("not equal", payload1, kcm.get("test"));
+	Assert.assertEquals("not equal", payload1, kcm.get("test"));
 
-		Assert.assertFalse("not false", kcm.replace("test", Long.toString(System.currentTimeMillis()), payload2));
+	Assert.assertFalse("not false", kcm.replace("test",
+		Long.toString(System.currentTimeMillis()), payload2));
 
-		Thread.sleep(100);
+	Thread.sleep(100);
 
-		Assert.assertEquals("not equal", payload1, kcm.get("test"));
+	Assert.assertEquals("not equal", payload1, kcm.get("test"));
 
-		Assert.assertFalse("not false", kcm.replace("uest", Long.toString(System.currentTimeMillis()), payload2));
-	}
+	Assert.assertFalse("not false", kcm.replace("uest",
+		Long.toString(System.currentTimeMillis()), payload2));
+    }
 }

@@ -24,19 +24,19 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 public class CountDownOnConnectWatcher implements Watcher {
-	private CountDownLatch latch;
+    private CountDownLatch latch;
 
-	public CountDownOnConnectWatcher() {
-		// for junit
-	}
+    public CountDownOnConnectWatcher() {
+	// for junit
+    }
 
-	public void setLatch(CountDownLatch latch) {
-		this.latch = latch;
-	}
+    public void setLatch(CountDownLatch latch) {
+	this.latch = latch;
+    }
 
-	@Override
-	public void process(WatchedEvent event) {
-		if (event.getState() == KeeperState.SyncConnected)
-			this.latch.countDown();
-	}
+    @Override
+    public void process(WatchedEvent event) {
+	if (event.getState() == KeeperState.SyncConnected)
+	    this.latch.countDown();
+    }
 }

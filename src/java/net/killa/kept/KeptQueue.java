@@ -36,70 +36,71 @@ import org.apache.zookeeper.data.ACL;
  * 
  */
 public class KeptQueue<T> extends KeptList<T> implements Queue<T> {
-	/**
-	 * Construct a KeptQueue.
-	 * 
-	 * @param keeper
-	 *            A {@link ZooKeeper} that is synchronized with
-	 * 
-	 * @param znode
-	 *            A {@link String} containing the znode whose children will be
-	 *            members of the set
-	 * 
-	 * @param acl
-	 *            A {@link List} of {@link ACL} containing the access control
-	 *            lists for child node creation
-	 * 
-	 * @param mode
-	 *            A {@link CreateMode} representing the persistence of created
-	 *            child nodes
-	 * 
-	 * @throws KeeperException
-	 * @throws InterruptedException
-	 */
-	public KeptQueue(ZooKeeper keeper, String znode, List<ACL> acl, CreateMode mode) throws KeeperException, InterruptedException {
-		super(keeper, znode, acl, mode);
-	}
+    /**
+     * Construct a KeptQueue.
+     * 
+     * @param keeper
+     *            A {@link ZooKeeper} that is synchronized with
+     * 
+     * @param znode
+     *            A {@link String} containing the znode whose children will be
+     *            members of the set
+     * 
+     * @param acl
+     *            A {@link List} of {@link ACL} containing the access control
+     *            lists for child node creation
+     * 
+     * @param mode
+     *            A {@link CreateMode} representing the persistence of created
+     *            child nodes
+     * 
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    public KeptQueue(ZooKeeper keeper, String znode, List<ACL> acl,
+	    CreateMode mode) throws KeeperException, InterruptedException {
+	super(keeper, znode, acl, mode);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public T element() {
-		if (this.size() == 0)
-			throw new NoSuchElementException();
+    /** {@inheritDoc} */
+    @Override
+    public T element() {
+	if (this.size() == 0)
+	    throw new NoSuchElementException();
 
-		return this.get(0);
-	}
+	return this.get(0);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public boolean offer(T o) {
-		return this.add(o);
-	}
+    /** {@inheritDoc} */
+    @Override
+    public boolean offer(T o) {
+	return this.add(o);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public T peek() {
-		if (this.size() == 0)
-			return null;
+    /** {@inheritDoc} */
+    @Override
+    public T peek() {
+	if (this.size() == 0)
+	    return null;
 
-		return this.get(0);
-	}
+	return this.get(0);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public T poll() {
-		if (this.size() == 0)
-			return null;
+    /** {@inheritDoc} */
+    @Override
+    public T poll() {
+	if (this.size() == 0)
+	    return null;
 
-		return this.remove(0);
-	}
+	return this.remove(0);
+    }
 
-	/** {@inheritDoc} */
-	@Override
-	public T remove() {
-		if (this.size() == 0)
-			throw new NoSuchElementException();
+    /** {@inheritDoc} */
+    @Override
+    public T remove() {
+	if (this.size() == 0)
+	    throw new NoSuchElementException();
 
-		return this.remove(0);
-	}
+	return this.remove(0);
+    }
 }
