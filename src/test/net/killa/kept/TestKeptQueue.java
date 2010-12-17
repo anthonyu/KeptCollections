@@ -33,8 +33,8 @@ public class TestKeptQueue extends BaseKeptUtil {
 
     @Test
     public void testKeptStringQueue() throws Exception {
-	KeptQueue<String> kq = new KeptQueue<String>(this.keeper, this.parent,
-		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptQueue<String> kq = new KeptQueue<String>(String.class, this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	String payload1 = Long.toString(System.currentTimeMillis());
 	Thread.sleep(100);
@@ -71,8 +71,8 @@ public class TestKeptQueue extends BaseKeptUtil {
     @Test
     public void testKeptNonPrimitiveQueue() throws Exception {
 	KeptQueue<SerializablePerson> kq = new KeptQueue<SerializablePerson>(
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		SerializablePerson.class, this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	SerializablePerson person1 = new SerializablePerson();
 	person1.age = 50;
@@ -113,8 +113,8 @@ public class TestKeptQueue extends BaseKeptUtil {
     @Test(expected = NoSuchElementException.class)
     public void testKeptQueueEmptyElement() throws IOException,
 	    KeeperException, InterruptedException {
-	KeptQueue<Object> kq = new KeptQueue<Object>(this.keeper, this.parent,
-		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptQueue<Object> kq = new KeptQueue<Object>(Object.class, this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kq.element();
     }
@@ -122,8 +122,8 @@ public class TestKeptQueue extends BaseKeptUtil {
     @Test(expected = NoSuchElementException.class)
     public void testKeptQueueEmptyRemove() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptQueue<Object> kq = new KeptQueue<Object>(this.keeper, this.parent,
-		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptQueue<Object> kq = new KeptQueue<Object>(Object.class, this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kq.remove();
     }

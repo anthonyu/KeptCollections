@@ -34,7 +34,7 @@ public class TestKeptBlockingQueue extends BaseKeptUtil {
     @Test
     public void testKeptStringQueue() throws Exception {
 	KeptBlockingQueue<String> kbq = new KeptBlockingQueue<String>(
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	Assert.assertNull(kbq.poll(1, TimeUnit.SECONDS));

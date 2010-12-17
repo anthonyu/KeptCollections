@@ -59,9 +59,10 @@ public class KeptBlockingQueue<T> extends KeptQueue<T> implements
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public KeptBlockingQueue(ZooKeeper keeper, String znode, List<ACL> acl,
-	    CreateMode mode) throws KeeperException, InterruptedException {
-	super(keeper, znode, acl, mode);
+    public KeptBlockingQueue(final Class<? extends T> elementClass,
+	    final ZooKeeper keeper, final String znode, final List<ACL> acl,
+	    final CreateMode mode) throws KeeperException, InterruptedException {
+	super(elementClass, keeper, znode, acl, mode);
     }
 
     /** {@inheritDoc} */

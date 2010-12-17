@@ -68,9 +68,10 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public KeptList(ZooKeeper keeper, String znode, List<ACL> acl,
-	    CreateMode mode) throws KeeperException, InterruptedException {
-	super(keeper, znode, acl, mode);
+    public KeptList(final Class<? extends T> elementClass,
+	    final ZooKeeper keeper, final String znode, final List<ACL> acl,
+	    final CreateMode mode) throws KeeperException, InterruptedException {
+	super(elementClass, keeper, znode, acl, mode);
 
 	this.znode = znode;
 	this.keeper = keeper;
@@ -99,9 +100,9 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 
 		    for (String s : children) {
 			this.indices.add((this.znode + '/' + s));
-			this.elements.add((T) Transformer
-				.bytesToObject(this.keeper.getData(this.znode
-					+ '/' + s, this.watcher, null)));
+			this.elements.add((T) Transformer.bytesToObject(
+				this.keeper.getData(this.znode + '/' + s,
+					this.watcher, null), elementClass));
 		    }
 		} catch (KeeperException.SessionExpiredException e) {
 		    throw new RuntimeException(e.getClass().getSimpleName()
@@ -173,7 +174,7 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 
 	    try {
 		T previous = (T) Transformer.bytesToObject(this.keeper.getData(
-			this.indices.get(index), false, null));
+			this.indices.get(index), false, null), elementClass);
 		this.removeUnsynchronized(index);
 		return previous;
 	    } catch (InterruptedException e) {
@@ -204,8 +205,9 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 	try {
 	    String path = this.indices.get(index);
 	    T previous = (T) Transformer.bytesToObject(this.keeper.getData(
-		    path, false, null));
-	    this.keeper.setData(path, Transformer.objectToBytes(element), -1);
+		    path, false, null), elementClass);
+	    this.keeper.setData(path, Transformer.objectToBytes(element,
+		    elementClass), -1);
 	    return previous;
 	} catch (KeeperException e) {
 	    throw new RuntimeException(

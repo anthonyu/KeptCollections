@@ -36,8 +36,9 @@ public class TestKeptCollection extends BaseKeptUtil {
     @Test
     public void testKeptCollection() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptCollection<String> kc = new KeptCollection<String>(this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptCollection<String> kc = new KeptCollection<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the collection are reflected in the
 	// znode
@@ -69,8 +70,8 @@ public class TestKeptCollection extends BaseKeptUtil {
 	Assert.assertFalse(kc.contains(payload));
 
 	String fullPath = this.keeper.create(this.parent + "/node-",
-		Transformer.objectToBytes(payload), Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		Transformer.objectToBytes(payload, String.class),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	// wait for it to take effect
 	Thread.sleep(100);
@@ -89,8 +90,9 @@ public class TestKeptCollection extends BaseKeptUtil {
     @Test
     public void testKeptCollectionClear() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptCollection<String> ks = new KeptCollection<String>(this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptCollection<String> ks = new KeptCollection<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	ks.add("one");
 	ks.add("two");
@@ -99,10 +101,14 @@ public class TestKeptCollection extends BaseKeptUtil {
 	// wait for it to take effect
 	Thread.sleep(100);
 
-	Assert.assertTrue("collection does not contain one", ks.contains("one"));
-	Assert.assertTrue("collection does not contain two", ks.contains("two"));
-	Assert.assertTrue("collection does not contain three",
-		ks.contains("three"));
+	Assert
+		.assertTrue("collection does not contain one", ks
+			.contains("one"));
+	Assert
+		.assertTrue("collection does not contain two", ks
+			.contains("two"));
+	Assert.assertTrue("collection does not contain three", ks
+		.contains("three"));
 
 	ks.clear();
 
@@ -123,8 +129,9 @@ public class TestKeptCollection extends BaseKeptUtil {
 	hs.add("two");
 	hs.add("three");
 
-	KeptCollection<String> s = new KeptCollection<String>(this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptCollection<String> s = new KeptCollection<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	s.addAll(hs);
 
@@ -160,8 +167,9 @@ public class TestKeptCollection extends BaseKeptUtil {
 	al2.add("three");
 	al2.add("four");
 
-	KeptCollection<String> kc = new KeptCollection<String>(this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptCollection<String> kc = new KeptCollection<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	kc.addAll(al1);
 
@@ -174,17 +182,20 @@ public class TestKeptCollection extends BaseKeptUtil {
 	// wait for it to take effect
 	Thread.sleep(100);
 
-	Assert.assertTrue("collection does not contain all", kc.contains("two"));
-	Assert.assertTrue("collection does not contain all",
-		kc.contains("three"));
+	Assert
+		.assertTrue("collection does not contain all", kc
+			.contains("two"));
+	Assert.assertTrue("collection does not contain all", kc
+		.contains("three"));
 	Assert.assertEquals("collection is the wrong size", 2, kc.size());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testKeptCollectionAddNull() throws IOException,
 	    KeeperException, InterruptedException {
-	KeptCollection<Object> kc = new KeptCollection<Object>(this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptCollection<Object> kc = new KeptCollection<Object>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	kc.add(null);
     }
@@ -192,8 +203,9 @@ public class TestKeptCollection extends BaseKeptUtil {
     @Test(expected = IllegalArgumentException.class)
     public void testKeptCollectionAddAllNull() throws IOException,
 	    KeeperException, InterruptedException {
-	KeptCollection<String> kc = new KeptCollection<String>(this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptCollection<String> kc = new KeptCollection<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	kc.addAll(Arrays.asList(new String[] { null }));
     }

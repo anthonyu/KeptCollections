@@ -64,7 +64,7 @@
 			<classpath refid="classpath" />
 			<batchtest>
 				<formatter type="plain" usefile="false" />
-				<fileset dir="build/testclasses" includes="**/Test*.class" />
+				<fileset dir="build/testclasses" includes="**/*Test*.class" />
 			</batchtest>
 		</junit>
 	</target>

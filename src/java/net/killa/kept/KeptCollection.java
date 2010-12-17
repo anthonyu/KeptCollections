@@ -44,6 +44,7 @@ import org.apache.zookeeper.data.ACL;
 public class KeptCollection<T> implements Collection<T>, Synchronizable {
     private final SynchronizingWatcher watcher;
     protected final List<T> elements;
+    protected final Class<? extends T> elementClass;
 
     private final ZooKeeper keeper;
     private final String znode;
@@ -72,10 +73,12 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
      * @throws InterruptedException
      * 
      */
-    public KeptCollection(ZooKeeper keeper, String znode, List<ACL> acl,
-	    CreateMode createMode) throws KeeperException, InterruptedException {
+    public KeptCollection(final Class<? extends T> elementClass,
+	    final ZooKeeper keeper, final String znode, final List<ACL> acl,
+	    final CreateMode createMode) throws KeeperException,
+	    InterruptedException {
 	this.elements = new ArrayList<T>();
-
+	this.elementClass = elementClass;
 	this.keeper = keeper;
 
 	// if the znode doesn't exist, create a permanent znode with that path
@@ -119,7 +122,8 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 		for (String s : this.keeper.getChildren(this.znode,
 			this.watcher)) {
 		    this.elements.add((T) Transformer.bytesToObject(this.keeper
-			    .getData(this.znode + '/' + s, false, null)));
+			    .getData(this.znode + '/' + s, false, null),
+			    elementClass));
 		}
 	    } catch (KeeperException.SessionExpiredException e) {
 		// ignore it
@@ -135,8 +139,8 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 
     protected boolean addUnsynchronized(Object o) throws KeeperException,
 	    InterruptedException, IOException {
-	this.keeper.create(this.znode + "/entry-",
-		Transformer.objectToBytes(o), this.acl, this.createMode);
+	this.keeper.create(this.znode + "/entry-", Transformer.objectToBytes(o,
+		elementClass), this.acl, this.createMode);
 
 	return true;
     }
@@ -144,9 +148,8 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
     protected boolean removeUnsynchronized(Object o)
 	    throws InterruptedException, KeeperException, IOException {
 	for (String s : this.keeper.getChildren(this.znode, this.watcher))
-	    if (Arrays.equals(
-		    this.keeper.getData(this.znode + '/' + s, false, null),
-		    Transformer.objectToBytes(o))) {
+	    if (Arrays.equals(this.keeper.getData(this.znode + '/' + s, false,
+		    null), Transformer.objectToBytes(o, elementClass))) {
 		this.keeper.delete(this.znode + '/' + s, -1);
 
 		return true;

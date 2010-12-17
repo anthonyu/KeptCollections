@@ -30,8 +30,8 @@ public class TestKeptList extends BaseKeptUtil {
 
     @Test
     public void testKeptStringList() throws Exception {
-	KeptList<String> kl = new KeptList<String>(this.keeper, this.parent,
-		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptList<String> kl = new KeptList<String>(String.class, this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	String payload = Long.toString(System.currentTimeMillis());
 	Thread.sleep(100);
@@ -60,8 +60,8 @@ public class TestKeptList extends BaseKeptUtil {
 
     @Test
     public void testKeptLongList() throws Exception {
-	KeptList<Long> kl = new KeptList<Long>(this.keeper, this.parent,
-		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptList<Long> kl = new KeptList<Long>(Long.class, this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	long payload = System.currentTimeMillis();
 	Thread.sleep(100);
@@ -91,8 +91,8 @@ public class TestKeptList extends BaseKeptUtil {
     @Test
     public void testKeptNonprimitiveList() throws Exception {
 	KeptList<SerializablePerson> kl = new KeptList<SerializablePerson>(
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		SerializablePerson.class, this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	SerializablePerson person1 = new SerializablePerson();
 	person1.age = 100;
@@ -133,8 +133,8 @@ public class TestKeptList extends BaseKeptUtil {
     @Test(expected = IndexOutOfBoundsException.class)
     public void testKeptCollectionBigIndex() throws KeeperException,
 	    InterruptedException {
-	KeptList<String> kl = new KeptList<String>(this.keeper, this.parent,
-		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	KeptList<String> kl = new KeptList<String>(String.class, this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kl.set(Integer.MAX_VALUE, "wtf");
     }
