@@ -13,6 +13,11 @@ Changes made to a KeptCollection by one node are seen by all other nodes
 within milliseconds, allowing for easy communication between nodes in a
 computing cluster.
 
+KeptCollections now supports Java generics, thanks to Gaurav Sharma. Classes
+that implement Serializable can be used as values in any of the
+collections. Classes that are serializable as strings (i.e. ints, doubles,
+etc.) will still be stored as strings on the ZooKeeper.
+
 Why KeptCollections?
 --------------------
 
@@ -51,6 +56,8 @@ Both are accessed the same way:
     String value = map.get("key");
 </code>
 
+See the JavaDoc help for more information.
+
 How stable are the collections?
 -------------------------------
 
@@ -81,9 +88,21 @@ Queue
 BlockingQueue
 
 
-Lock (not from Java Collections, but it sort of fits here)
+Lock (not from Java Collections, but it sort of fits here regardless).
+
+Which interfaces will (likely) be implemented in the future?
+------------------------------------------------------------
+
+SortedSet
+
+
+SortedMap
+
+A few of the java.concurrent interfaces, but not those, mainly
+lock and barrier related, that are already implemented by Menagerie
+[https://github.com/openUtility/menagerie]
 
 Where can I get a Jar?
 ----------------------
 
-Right <a href="https://github.com/downloads/anthonyu/KeptCollections/kept-collections-0.9.jar">here</a>.
+Right <a href="https://github.com/downloads/anthonyu/KeptCollections/kept-collections-0.9.1.jar">here</a>.
