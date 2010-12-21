@@ -42,7 +42,7 @@ import org.apache.zookeeper.data.Stat;
  * 
  */
 public class KeptMap implements Map<String, String>, Synchronizable {
-    private static final Logger LOG = Logger.getLogger(KeptSet.class);
+    private static final Logger LOG = Logger.getLogger(KeptMap.class);
 
     private final SynchronizingWatcher watcher;
     protected final Map<String, String> map;

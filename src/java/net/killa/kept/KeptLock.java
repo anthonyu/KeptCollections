@@ -54,12 +54,8 @@ public class KeptLock implements Lock {
      * @param acl
      *            A {@link List} of {@link ACL} containing the access control
      *            lists for node creation
-     * 
-     * @throws KeeperException
-     * @throws InterruptedException
      */
-    public KeptLock(ZooKeeper keeper, String znode, List<ACL> acl)
-	    throws KeeperException, InterruptedException {
+    public KeptLock(ZooKeeper keeper, String znode, List<ACL> acl) {
 	this.keeper = keeper;
 
 	this.znode = znode;
