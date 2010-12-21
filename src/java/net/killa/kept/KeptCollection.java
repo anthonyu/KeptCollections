@@ -54,6 +54,10 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
     /**
      * Construct a KeptCollection.
      * 
+     * @param elementClass
+     *            A {@link Class} representing the class of object that will be
+     *            elements of this collection
+     * 
      * @param keeper
      *            A {@link ZooKeeper} that is synchronized with
      * 
@@ -139,8 +143,9 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 
     protected boolean addUnsynchronized(Object o) throws KeeperException,
 	    InterruptedException, IOException {
-	this.keeper.create(this.znode + "/entry-", Transformer.objectToBytes(o,
-		elementClass), this.acl, this.createMode);
+	this.keeper.create(this.znode + "/entry-",
+		Transformer.objectToBytes(o, elementClass), this.acl,
+		this.createMode);
 
 	return true;
     }
@@ -148,8 +153,9 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
     protected boolean removeUnsynchronized(Object o)
 	    throws InterruptedException, KeeperException, IOException {
 	for (String s : this.keeper.getChildren(this.znode, this.watcher))
-	    if (Arrays.equals(this.keeper.getData(this.znode + '/' + s, false,
-		    null), Transformer.objectToBytes(o, elementClass))) {
+	    if (Arrays.equals(
+		    this.keeper.getData(this.znode + '/' + s, false, null),
+		    Transformer.objectToBytes(o, elementClass))) {
 		this.keeper.delete(this.znode + '/' + s, -1);
 
 		return true;

@@ -41,6 +41,10 @@ public class KeptBlockingQueue<T> extends KeptQueue<T> implements
     /**
      * Construct a KeptBlockingQueue.
      * 
+     * @param elementClass
+     *            A {@link Class} representing the class of object that will be
+     *            elements of this collection
+     * 
      * @param keeper
      *            A {@link ZooKeeper} that is synchronized with
      * 

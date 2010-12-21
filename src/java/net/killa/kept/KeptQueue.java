@@ -39,6 +39,10 @@ public class KeptQueue<T> extends KeptList<T> implements Queue<T> {
     /**
      * Construct a KeptQueue.
      * 
+     * @param elementClass
+     *            A {@link Class} representing the class of object that will be
+     *            elements of this collection
+     * 
      * @param keeper
      *            A {@link ZooKeeper} that is synchronized with
      * 

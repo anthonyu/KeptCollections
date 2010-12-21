@@ -50,6 +50,10 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
     /**
      * Construct a KeptList.
      * 
+     * @param elementClass
+     *            A {@link Class} representing the class of object that will be
+     *            elements of this collection
+     * 
      * @param keeper
      *            A {@link ZooKeeper} that is synchronized with
      * 
@@ -204,10 +208,10 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 
 	try {
 	    String path = this.indices.get(index);
-	    T previous = (T) Transformer.bytesToObject(this.keeper.getData(
-		    path, false, null), elementClass);
-	    this.keeper.setData(path, Transformer.objectToBytes(element,
-		    elementClass), -1);
+	    T previous = (T) Transformer.bytesToObject(
+		    this.keeper.getData(path, false, null), elementClass);
+	    this.keeper.setData(path,
+		    Transformer.objectToBytes(element, elementClass), -1);
 	    return previous;
 	} catch (KeeperException e) {
 	    throw new RuntimeException(
