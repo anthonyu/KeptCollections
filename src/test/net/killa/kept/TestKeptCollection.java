@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -101,14 +102,10 @@ public class TestKeptCollection extends BaseKeptUtil {
 	// wait for it to take effect
 	Thread.sleep(100);
 
-	Assert
-		.assertTrue("collection does not contain one", ks
-			.contains("one"));
-	Assert
-		.assertTrue("collection does not contain two", ks
-			.contains("two"));
-	Assert.assertTrue("collection does not contain three", ks
-		.contains("three"));
+	Assert.assertTrue("collection does not contain one", ks.contains("one"));
+	Assert.assertTrue("collection does not contain two", ks.contains("two"));
+	Assert.assertTrue("collection does not contain three",
+		ks.contains("three"));
 
 	ks.clear();
 
@@ -182,11 +179,9 @@ public class TestKeptCollection extends BaseKeptUtil {
 	// wait for it to take effect
 	Thread.sleep(100);
 
-	Assert
-		.assertTrue("collection does not contain all", kc
-			.contains("two"));
-	Assert.assertTrue("collection does not contain all", kc
-		.contains("three"));
+	Assert.assertTrue("collection does not contain all", kc.contains("two"));
+	Assert.assertTrue("collection does not contain all",
+		kc.contains("three"));
 	Assert.assertEquals("collection is the wrong size", 2, kc.size());
     }
 
@@ -208,5 +203,37 @@ public class TestKeptCollection extends BaseKeptUtil {
 		CreateMode.EPHEMERAL);
 
 	kc.addAll(Arrays.asList(new String[] { null }));
+    }
+
+    @Test
+    public void testKeptCollectionIterator() throws IOException,
+	    KeeperException, InterruptedException {
+	KeptCollection<String> ks = new KeptCollection<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
+
+	ks.add("one");
+	ks.add("two");
+	ks.add("three");
+
+	// wait for it to take effect
+	Thread.sleep(100);
+
+	Assert.assertTrue("collection does not contain one", ks.contains("one"));
+	Assert.assertTrue("collection does not contain two", ks.contains("two"));
+	Assert.assertTrue("collection does not contain three",
+		ks.contains("three"));
+
+	for (Iterator<String> it = ks.iterator(); it.hasNext();)
+	    if (it.next().equals("two"))
+		it.remove();
+
+	// wait for it to take effect
+	Thread.sleep(100);
+
+	Assert.assertTrue("collection does not contain one", ks.contains("one"));
+	Assert.assertFalse("collection does contain two", ks.contains("two"));
+	Assert.assertTrue("collection does not contain three",
+		ks.contains("three"));
     }
 }

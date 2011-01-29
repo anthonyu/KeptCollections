@@ -150,6 +150,12 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 	return true;
     }
 
+    protected boolean removeUnsynchronized(int index) throws InterruptedException, KeeperException {
+	this.keeper.delete(this.znode + '/' + this.keeper.getChildren(this.znode, this.watcher).get(index - 1), -1);
+    
+	return true;
+    }
+    
     protected boolean removeUnsynchronized(Object o)
 	    throws InterruptedException, KeeperException, IOException {
 	for (String s : this.keeper.getChildren(this.znode, this.watcher))
@@ -269,7 +275,7 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
     /** {@inheritDoc} */
     @Override
     public Iterator<T> iterator() {
-	return this.elements.iterator();
+	return new KeptIterator<T>(this);
     }
 
     /** {@inheritDoc} */
@@ -367,5 +373,39 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
     @Override
     public String toString() {
 	return this.elements.toString();
+    }
+}
+
+class KeptIterator<T> implements Iterator<T> {
+    private KeptCollection<T> collection;
+    private Iterator<T> iterator;
+    private int i;
+    
+    public KeptIterator(KeptCollection<T> collection) {
+	this.collection = collection;
+	this.iterator = collection.elements.iterator();
+    }
+    
+    @Override
+    public boolean hasNext() {
+	return this.iterator.hasNext();
+    }
+
+    @Override
+    public T next() {
+	i++;
+
+	return this.iterator.next();
+    }
+
+    @Override
+    public void remove() {
+	try {
+	    this.collection.removeUnsynchronized(this.i);
+	} catch (InterruptedException e) {
+	    throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+	} catch (KeeperException e) {
+	    throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+	}
     }
 }
