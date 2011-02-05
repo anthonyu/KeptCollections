@@ -17,6 +17,7 @@
  */
 package net.killa.kept;
 
+import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +85,7 @@ public class KeptLock implements Lock {
 	    }) != null) {
 		if (!latch.await(t, tu))
 		    try {
-			this.keeper.create(this.znode, new byte[0], this.acl,
+			this.keeper.create(this.znode, ManagementFactory.getRuntimeMXBean().getName().getBytes(), this.acl,
 				CreateMode.EPHEMERAL);
 
 			return true;
@@ -97,7 +98,7 @@ public class KeptLock implements Lock {
 		    return false;
 	    } else {
 		try {
-		    this.keeper.create(this.znode, new byte[0], this.acl,
+		    this.keeper.create(this.znode, ManagementFactory.getRuntimeMXBean().getName().getBytes(), this.acl,
 			    CreateMode.EPHEMERAL);
 
 		    return true;
