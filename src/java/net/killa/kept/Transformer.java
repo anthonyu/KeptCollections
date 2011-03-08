@@ -136,7 +136,7 @@ final class Transformer {
 	    return toTransform;
 	}
 	if (type.equals(Byte.class) || type.equals(byte.class)) {
-	    return new Byte(toTransform);
+	    return Byte.valueOf(toTransform);
 	}
 	if (type.equals(Character.class) || type.equals(char.class)) {
 	    if (!isNullOrEmpty(toTransform)) {
@@ -150,28 +150,28 @@ final class Transformer {
 	    }
 	}
 	if (type.equals(Short.class) || type.equals(short.class)) {
-	    return new Short(toTransform);
+	    return Short.valueOf(toTransform);
 	}
 	if (type.equals(Integer.class) || type.equals(int.class)) {
 	    if (toTransform == null) {
 		return 0;
 	    }
-	    return new Integer(toTransform);
+	    return Integer.valueOf(toTransform);
 	}
 	if (type.equals(Float.class) || type.equals(float.class)) {
 	    if (toTransform == null) {
 		return 0f;
 	    }
-	    return new Float(toTransform);
+	    return Float.valueOf(toTransform);
 	}
 	if (type.equals(Double.class) || type.equals(double.class)) {
-	    return new Double(toTransform);
+	    return Double.valueOf(toTransform);
 	}
 	if (type.equals(Long.class) || type.equals(long.class)) {
-	    return new Long(toTransform);
+	    return Long.valueOf(toTransform);
 	}
 	if (type.equals(Boolean.class) || type.equals(boolean.class)) {
-	    return new Boolean(toTransform);
+	    return Boolean.valueOf(toTransform);
 	}
 	if (type.equals(BigDecimal.class)) {
 	    return new BigDecimal(toTransform);
@@ -183,13 +183,12 @@ final class Transformer {
 	return toTransform;
     }
 
-    @SuppressWarnings("unchecked")
     private static boolean isNullOrEmpty(final Object obj) {
 	if (obj == null) {
 	    return true;
 	}
 	if (obj.getClass().equals(Collection.class)) {
-	    return ((Collection) obj).size() == 0;
+	    return ((Collection<?>) obj).size() == 0;
 	} else {
 	    if (obj.toString().trim().length() == 0) {
 		return true;

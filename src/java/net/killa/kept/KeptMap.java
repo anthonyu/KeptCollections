@@ -148,8 +148,8 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 	    // it already exists
 	    try {
 		Stat stat = new Stat();
+		
 		int j = 0;
-
 		while (true) {
 		    // get the old value and its version
 		    byte[] oldval = this.keeper.getData(path, false, stat);
@@ -162,7 +162,7 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 			// return the old value
 			return new String(oldval);
 		    } catch (KeeperException.BadVersionException f) {
-			if (j > 10)
+			if (j++ > 9)
 			    throw f;
 
 			// someone updated it in between, try again
