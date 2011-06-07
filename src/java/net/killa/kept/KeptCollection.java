@@ -78,96 +78,89 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
      * 
      */
     public KeptCollection(final Class<? extends T> elementClass,
-	    final ZooKeeper keeper, final String znode, final List<ACL> acl,
-	    final CreateMode createMode) throws KeeperException,
-	    InterruptedException {
-	this.elements = new ArrayList<T>();
-	this.elementClass = elementClass;
-	this.keeper = keeper;
+                          final ZooKeeper keeper,
+                          final String znode,
+                          final List<ACL> acl,
+                          final CreateMode createMode) throws KeeperException, InterruptedException {
+        this.elements = new ArrayList<T>();
+        this.elementClass = elementClass;
+        this.keeper = keeper;
 
-	// if the znode doesn't exist, create a permanent znode with that path
-	// TODO: change to allow ephemeral znode when ephemeral parents are
-	// supported by zookeeper
-	try {
-	    if (this.keeper.exists(znode, false) == null)
-		this.keeper.create(znode, new byte[0], acl,
-			CreateMode.PERSISTENT);
-	} catch (KeeperException.NodeExistsException e) {
-	    // ignore this exception
-	}
+        // if the znode doesn't exist, create a permanent znode with that path
+        // TODO: change to allow ephemeral znode when ephemeral parents are
+        // supported by zookeeper
+        try {
+            if (this.keeper.exists(znode, false) == null)
+                this.keeper.create(znode, new byte[0], acl, CreateMode.PERSISTENT);
+        } catch (KeeperException.NodeExistsException e) {
+            // ignore this exception
+        }
 
-	this.znode = znode;
-	this.acl = acl;
-	if (createMode == CreateMode.PERSISTENT_SEQUENTIAL
-		|| createMode == CreateMode.EPHEMERAL_SEQUENTIAL)
-	    this.createMode = createMode;
-	else if (createMode == CreateMode.PERSISTENT)
-	    this.createMode = CreateMode.PERSISTENT_SEQUENTIAL;
-	else if (createMode == CreateMode.EPHEMERAL)
-	    this.createMode = CreateMode.EPHEMERAL_SEQUENTIAL;
-	else
-	    throw new InvalidParameterException("unexpected create mode "
-		    + createMode.toString());
+        this.znode = znode;
+        this.acl = acl;
+        if (createMode == CreateMode.PERSISTENT_SEQUENTIAL || createMode == CreateMode.EPHEMERAL_SEQUENTIAL)
+            this.createMode = createMode;
+        else if (createMode == CreateMode.PERSISTENT)
+            this.createMode = CreateMode.PERSISTENT_SEQUENTIAL;
+        else if (createMode == CreateMode.EPHEMERAL)
+            this.createMode = CreateMode.EPHEMERAL_SEQUENTIAL;
+        else
+            throw new InvalidParameterException("unexpected create mode " + createMode.toString());
 
-	this.watcher = new SynchronizingWatcher(this);
+        this.watcher = new SynchronizingWatcher(this);
 
-	this.synchronize();
+        this.synchronize();
     }
 
     /** {@inheritDoc} */
     @SuppressWarnings("unchecked")
     @Override
     public void synchronize() throws KeeperException, InterruptedException {
-	synchronized (this.elements) {
-	    try {
-		// clear out the cache and reload it
-		this.elements.clear();
+        synchronized (this.elements) {
+            try {
+                // clear out the cache and reload it
+                this.elements.clear();
 
-		for (String s : this.keeper.getChildren(this.znode,
-			this.watcher)) {
-		    this.elements.add((T) Transformer.bytesToObject(this.keeper
-			    .getData(this.znode + '/' + s, false, null),
-			    elementClass));
-		}
-	    } catch (KeeperException.SessionExpiredException e) {
-		// ignore it
-	    } catch (ClassNotFoundException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (IOException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    }
-	}
+                for (String s : this.keeper.getChildren(this.znode, this.watcher)) {
+                    this.elements.add((T)Transformer.bytesToObject(this.keeper.getData(this.znode + '/' + s,
+                                                                                       false,
+                                                                                       null), elementClass));
+                }
+            } catch (KeeperException.SessionExpiredException e) {
+                // ignore it
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            } catch (IOException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            }
+        }
     }
 
-    protected boolean addUnsynchronized(Object o) throws KeeperException,
-	    InterruptedException, IOException {
-	this.keeper.create(this.znode + "/entry-",
-		Transformer.objectToBytes(o, elementClass), this.acl,
-		this.createMode);
+    protected boolean addUnsynchronized(Object o) throws KeeperException, InterruptedException, IOException {
+        this.keeper.create(this.znode + "/entry-",
+                           Transformer.objectToBytes(o, elementClass),
+                           this.acl,
+                           this.createMode);
 
-	return true;
+        return true;
     }
 
     protected boolean removeUnsynchronized(int index) throws InterruptedException, KeeperException {
-	this.keeper.delete(this.znode + '/' + this.keeper.getChildren(this.znode, this.watcher).get(index - 1), -1);
-    
-	return true;
+        this.keeper.delete(this.znode + '/' + this.keeper.getChildren(this.znode, this.watcher).get(index - 1), -1);
+
+        return true;
     }
-    
-    protected boolean removeUnsynchronized(Object o)
-	    throws InterruptedException, KeeperException, IOException {
-	for (String s : this.keeper.getChildren(this.znode, this.watcher))
-	    if (Arrays.equals(
-		    this.keeper.getData(this.znode + '/' + s, false, null),
-		    Transformer.objectToBytes(o, elementClass))) {
-		this.keeper.delete(this.znode + '/' + s, -1);
 
-		return true;
-	    }
+    protected boolean removeUnsynchronized(Object o) throws InterruptedException, KeeperException, IOException {
+        for (String s : this.keeper.getChildren(this.znode, this.watcher))
+            if (Arrays.equals(this.keeper.getData(this.znode + '/' + s, false, null),
+                              Transformer.objectToBytes(o, elementClass))) {
+                this.keeper.delete(this.znode + '/' + s, -1);
 
-	return false;
+                return true;
+            }
+
+        return false;
     }
 
     /**
@@ -177,21 +170,18 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
      */
     @Override
     public boolean add(T o) {
-	if (o == null)
-	    throw new IllegalArgumentException("nulls not allowed");
+        if (o == null)
+            throw new IllegalArgumentException("nulls not allowed");
 
-	try {
-	    return this.addUnsynchronized(o);
-	} catch (KeeperException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (InterruptedException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (IOException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	}
+        try {
+            return this.addUnsynchronized(o);
+        } catch (KeeperException e) {
+            throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+        } catch (IOException e) {
+            throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+        }
     }
 
     /**
@@ -201,211 +191,194 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
      */
     @Override
     public boolean addAll(Collection<? extends T> c) {
-	boolean modified = false;
+        boolean modified = false;
 
-	for (Object o : c) {
-	    try {
-		if (o == null) {
-		    throw new IllegalArgumentException("nulls not allowed");
-		}
+        for (Object o : c) {
+            try {
+                if (o == null) {
+                    throw new IllegalArgumentException("nulls not allowed");
+                }
 
-		if (this.addUnsynchronized(o)) {
-		    modified = true;
-		}
-	    } catch (KeeperException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (InterruptedException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (IOException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    }
-	}
+                if (this.addUnsynchronized(o)) {
+                    modified = true;
+                }
+            } catch (KeeperException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            } catch (IOException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            }
+        }
 
-	return modified;
+        return modified;
     }
 
     /** {@inheritDoc} */
     @Override
     public void clear() {
-	synchronized (this.elements) {
-	    try {
-		for (String s : this.keeper.getChildren(this.znode,
-			this.watcher))
-		    this.keeper.delete(this.znode + '/' + s, -1);
+        synchronized (this.elements) {
+            try {
+                for (String s : this.keeper.getChildren(this.znode, this.watcher))
+                    this.keeper.delete(this.znode + '/' + s, -1);
 
-		this.synchronize();
-	    } catch (KeeperException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (InterruptedException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    }
-	}
+                this.synchronize();
+            } catch (KeeperException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            }
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean contains(Object o) {
-	return this.elements.contains(o);
+        return this.elements.contains(o);
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean containsAll(Collection<?> c) {
-	synchronized (this.elements) {
-	    for (Object o : c)
-		if (!this.elements.contains(o))
-		    return false;
+        synchronized (this.elements) {
+            for (Object o : c)
+                if (!this.elements.contains(o))
+                    return false;
 
-	    return true;
-	}
+            return true;
+        }
 
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean isEmpty() {
-	return this.elements.isEmpty();
+        return this.elements.isEmpty();
     }
 
     /** {@inheritDoc} */
     @Override
     public Iterator<T> iterator() {
-	return new KeptIterator<T>(this);
+        return new KeptIterator<T>(this);
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean remove(Object o) {
-	try {
-	    return this.removeUnsynchronized(o);
-	} catch (InterruptedException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (KeeperException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (IOException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	}
+        try {
+            return this.removeUnsynchronized(o);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+        } catch (KeeperException e) {
+            throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+        } catch (IOException e) {
+            throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean removeAll(Collection<?> c) {
-	synchronized (this.elements) {
-	    try {
-		boolean modified = false;
+        synchronized (this.elements) {
+            try {
+                boolean modified = false;
 
-		for (Object o : c)
-		    if (this.removeUnsynchronized(o))
-			modified = true;
+                for (Object o : c)
+                    if (this.removeUnsynchronized(o))
+                        modified = true;
 
-		return modified;
-	    } catch (InterruptedException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (KeeperException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (IOException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    }
-	}
+                return modified;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            } catch (KeeperException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            } catch (IOException e) {
+                throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+            }
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean retainAll(Collection<?> c) {
-	synchronized (this.elements) {
-	    try {
-		// try not to copy unless necessary
-		Set<? extends Object> thatset;
-		if (c instanceof Set<?>)
-		    thatset = (Set<? extends Object>) c;
-		else
-		    thatset = new HashSet<Object>(c);
+        synchronized (this.elements) {
+            try {
+                // try not to copy unless necessary
+                Set<? extends Object> thatset;
+                if (c instanceof Set<?>)
+                    thatset = (Set<? extends Object>)c;
+                else
+                    thatset = new HashSet<Object>(c);
 
-		boolean changed = false;
+                boolean changed = false;
 
-		for (Object o : this.elements)
-		    if (!thatset.contains(o) && this.removeUnsynchronized(o)
-			    && !changed)
-			changed = true;
+                for (Object o : this.elements)
+                    if (!thatset.contains(o) && this.removeUnsynchronized(o) && !changed)
+                        changed = true;
 
-		return changed;
-	    } catch (KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
-	    } catch (IOException e) {
-		throw new RuntimeException("IOException caught", e);
-	    }
-	}
+                return changed;
+            } catch (KeeperException e) {
+                throw new RuntimeException("KeeperException caught", e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("InterruptedException caught", e);
+            } catch (IOException e) {
+                throw new RuntimeException("IOException caught", e);
+            }
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public int size() {
-	return this.elements.size();
+        return this.elements.size();
     }
 
     /** {@inheritDoc} */
     @Override
     public Object[] toArray() {
-	return this.elements.toArray();
+        return this.elements.toArray();
     }
 
     /** {@inheritDoc} */
     @SuppressWarnings("hiding")
     @Override
     public <T> T[] toArray(T[] a) {
-	return this.elements.toArray(a);
+        return this.elements.toArray(a);
     }
 
     /** {@inheritDoc} */
     @Override
     public String toString() {
-	return this.elements.toString();
+        return this.elements.toString();
     }
 }
 
 class KeptIterator<T> implements Iterator<T> {
     private KeptCollection<T> collection;
-    private Iterator<T> iterator;
     private int i;
-    
+
     public KeptIterator(KeptCollection<T> collection) {
-	this.collection = collection;
-	this.iterator = collection.elements.iterator();
+        this.collection = collection;
     }
-    
+
     @Override
     public boolean hasNext() {
-	return this.iterator.hasNext();
+        return i < collection.size();
     }
 
     @Override
     public T next() {
-	i++;
-
-	return this.iterator.next();
+        return collection.elements.get(i++);
     }
 
     @Override
     public void remove() {
-	try {
-	    this.collection.removeUnsynchronized(this.i);
-	} catch (InterruptedException e) {
-	    throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-	} catch (KeeperException e) {
-	    throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
-	}
+        try {
+            this.collection.removeUnsynchronized(this.i);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+        } catch (KeeperException e) {
+            throw new RuntimeException(e.getClass().getSimpleName() + " caught", e);
+        }
     }
 }
