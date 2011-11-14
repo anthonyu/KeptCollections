@@ -197,6 +197,7 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 
 		    return new String(oldval);
 		} catch (KeeperException.BadVersionException e) {
+		    i++;
 		    if (i > 10)
 			throw e;
 
