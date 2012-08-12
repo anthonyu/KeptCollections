@@ -99,7 +99,7 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 
 		    List<String> children = this.keeper.getChildren(this.znode,
 			    this.watcher);
-
+		    
 		    Collections.sort(children);
 
 		    for (String s : children) {
@@ -197,7 +197,6 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 	}
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public T set(int index, T element) {
 	if (index >= this.size())
@@ -208,6 +207,7 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 
 	try {
 	    String path = this.indices.get(index);
+	    @SuppressWarnings("unchecked")
 	    T previous = (T) Transformer.bytesToObject(
 		    this.keeper.getData(path, false, null), elementClass);
 	    this.keeper.setData(path,
