@@ -33,27 +33,21 @@ class SerializablePerson implements java.io.Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-	if (this == obj) {
+    public boolean equals(final Object obj) {
+	if (this == obj)
 	    return true;
-	}
-	if (obj == null) {
+	if (obj == null)
 	    return false;
-	}
-	if (!(obj instanceof SerializablePerson)) {
+	if (!(obj instanceof SerializablePerson))
 	    return false;
-	}
-	SerializablePerson other = (SerializablePerson) obj;
-	if (this.age != other.age) {
+	final SerializablePerson other = (SerializablePerson) obj;
+	if (this.age != other.age)
 	    return false;
-	}
 	if (this.name == null) {
-	    if (other.name != null) {
+	    if (other.name != null)
 		return false;
-	    }
-	} else if (!this.name.equals(other.name)) {
+	} else if (!this.name.equals(other.name))
 	    return false;
-	}
 	return true;
     }
 }

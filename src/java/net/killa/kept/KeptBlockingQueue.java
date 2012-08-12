@@ -69,27 +69,25 @@ public class KeptBlockingQueue<T> extends KeptQueue<T> implements
 	super(elementClass, keeper, znode, acl, mode);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public int drainTo(Collection<? super T> c) {
+    public int drainTo(final Collection<? super T> c) {
 	return this.drainTo(c, Integer.MAX_VALUE);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public int drainTo(Collection<? super T> c, int maxElements) {
+    public int drainTo(final Collection<? super T> c, final int maxElements) {
 	synchronized (this.elements) {
-	    int size = Math.min(this.size(), maxElements);
+	    final int size = Math.min(this.size(), maxElements);
 
 	    c.addAll(this.subList(0, size));
 
 	    try {
 		for (int i = 0; i < size; i++)
 		    this.removeUnsynchronized(i);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -98,22 +96,21 @@ public class KeptBlockingQueue<T> extends KeptQueue<T> implements
 	}
     }
 
-    /** {@inheritDoc} */
     @Override
-    public boolean offer(T o, long timeout, TimeUnit unit)
+    public boolean offer(final T o, final long timeout, final TimeUnit unit)
 	    throws InterruptedException {
 	// no capacity limitations for this queue (yet)
 	return this.offer(o);
     }
 
-    /** {@inheritDoc} */
     @Override
-    public T poll(long timeout, TimeUnit unit) throws InterruptedException {
-	long last = System.currentTimeMillis()
+    public T poll(final long timeout, final TimeUnit unit)
+	    throws InterruptedException {
+	final long last = System.currentTimeMillis()
 		+ TimeUnit.MILLISECONDS.convert(timeout, unit);
 
 	do {
-	    T element = this.poll();
+	    final T element = this.poll();
 
 	    if (element != null)
 		return element;
@@ -124,19 +121,16 @@ public class KeptBlockingQueue<T> extends KeptQueue<T> implements
 	return null;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void put(T o) throws InterruptedException {
+    public void put(final T o) throws InterruptedException {
 	this.offer(o);
     }
 
-    /** {@inheritDoc} */
     @Override
     public int remainingCapacity() {
 	return Integer.MAX_VALUE;
     }
 
-    /** {@inheritDoc} */
     @Override
     public T take() throws InterruptedException {
 	return this.poll(Long.MAX_VALUE, TimeUnit.DAYS);
