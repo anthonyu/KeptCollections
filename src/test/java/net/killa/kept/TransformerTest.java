@@ -86,7 +86,6 @@ public class TransformerTest {
 	}
 	long elapsed2 = System.nanoTime() - startNanos;
 	Assert.assertTrue("stringifiable is slower than serializable", elapsed2 > elapsed1);
-	Assert.assertTrue("stringifiable is not four times faster than serializable", elapsed2 > 4 * elapsed1);
 	System.out.println("Stringified serDeser (10k longs) nanos=" + elapsed1
 		+ "\nNon-Stringified serDeser (10k longs) nanos=" + elapsed2);
     }
