@@ -23,7 +23,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestKeptList extends BaseKeptUtil {
+public class KeptListTest extends BaseKeptUtil {
     {
 	this.parent = "/testkeptlist";
     }

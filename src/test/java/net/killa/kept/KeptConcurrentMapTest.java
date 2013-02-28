@@ -30,7 +30,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestKeptConcurrentMap {
+public class KeptConcurrentMapTest {
     private static final String PARENT = "/testkeptconcurrentmap";
 
     private ZooKeeper keeper;
@@ -51,9 +51,9 @@ public class TestKeptConcurrentMap {
     @After
     public void after() throws InterruptedException, KeeperException {
 	// delete the children
-	for (String s : this.keeper.getChildren(TestKeptConcurrentMap.PARENT,
+	for (String s : this.keeper.getChildren(KeptConcurrentMapTest.PARENT,
 		false))
-	    this.keeper.delete(TestKeptConcurrentMap.PARENT + '/' + s, -1);
+	    this.keeper.delete(KeptConcurrentMapTest.PARENT + '/' + s, -1);
 	// close the client
 	this.keeper.close();
     }
@@ -62,7 +62,7 @@ public class TestKeptConcurrentMap {
     public void testKeptConcurrentMap() throws IOException, KeeperException,
 	    InterruptedException {
 	KeptConcurrentMap kcm = new KeptConcurrentMap(this.keeper,
-		TestKeptConcurrentMap.PARENT, Ids.OPEN_ACL_UNSAFE,
+		KeptConcurrentMapTest.PARENT, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	String payload1 = Long.toString(System.currentTimeMillis());

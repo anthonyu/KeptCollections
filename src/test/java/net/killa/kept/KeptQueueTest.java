@@ -26,7 +26,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestKeptQueue extends BaseKeptUtil {
+public class KeptQueueTest extends BaseKeptUtil {
     {
 	this.parent = "/testkeptqueue";
     }

@@ -25,7 +25,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestKeptMap extends BaseKeptUtil {
+public class KeptMapTest extends BaseKeptUtil {
     {
 	this.parent = "/testkeptmap";
     }

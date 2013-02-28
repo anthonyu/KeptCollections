@@ -28,7 +28,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestUnkemptBlockingQueue extends BaseKeptUtil {
+public class UnkemptBlockingQueueTest extends BaseKeptUtil {
     {
 	this.parent = "/testunkemptyblockingqueue";
     }

@@ -26,14 +26,14 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.After;
 import org.junit.Test;
 
-public class TestKeptLock extends BaseKeptUtil {
+public class KeptLockTest extends BaseKeptUtil {
     private static final String LOCK = "/testkeptlock";
 
     @Override
     @After
     public void after() throws KeeperException, InterruptedException {
 	try {
-	    this.keeper.delete(TestKeptLock.LOCK, -1);
+	    this.keeper.delete(KeptLockTest.LOCK, -1);
 	} catch (KeeperException.NoNodeException e) {
 	    // ignore it
 	}
@@ -42,7 +42,7 @@ public class TestKeptLock extends BaseKeptUtil {
 
     @Test
     public void testKeptLock() throws KeeperException, InterruptedException {
-	KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK,
+	KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
 		Ids.OPEN_ACL_UNSAFE);
 
 	Assert.assertTrue("cannot lock", kl.tryLock());
@@ -61,7 +61,7 @@ public class TestKeptLock extends BaseKeptUtil {
 
     @Test
     public void testKeptLockWait() throws KeeperException, InterruptedException {
-	KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK,
+	KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
 		Ids.OPEN_ACL_UNSAFE);
 
 	long now = System.currentTimeMillis();
@@ -79,7 +79,7 @@ public class TestKeptLock extends BaseKeptUtil {
     @Test(expected = IllegalStateException.class)
     public void testKeptLockUnlockUnlocked() throws KeeperException,
 	    InterruptedException {
-	KeptLock kl = new KeptLock(this.keeper, TestKeptLock.LOCK,
+	KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
 		Ids.OPEN_ACL_UNSAFE);
 
 	kl.unlock();
