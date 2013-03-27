@@ -1,5 +1,5 @@
-Welcome to the KeptCollections FAQ
-==================================
+KeptCollections [![Build Status](https://travis-ci.org/anthonyu/KeptCollections.png)](https://travis-ci.org/anthonyu/KeptCollections)
+===============
 
 What is KeptCollections?
 ------------------------
