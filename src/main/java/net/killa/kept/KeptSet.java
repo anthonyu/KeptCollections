@@ -173,10 +173,9 @@ public class KeptSet implements Set<String>, Synchronizable {
 	synchronized (this.set) {
 	    try {
 		return this.addUnsynchronized(s);
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
@@ -199,10 +198,9 @@ public class KeptSet implements Set<String>, Synchronizable {
 			changed = true;
 
 		return changed;
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
@@ -215,10 +213,9 @@ public class KeptSet implements Set<String>, Synchronizable {
 		for (final String s : this.keeper.getChildren(this.znode,
 			this.watcher))
 		    this.keeper.delete(this.znode + '/' + s, -1);
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
@@ -259,10 +256,9 @@ public class KeptSet implements Set<String>, Synchronizable {
 	synchronized (this.set) {
 	    try {
 		return this.removeUnsynchronized(o);
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
@@ -285,10 +281,9 @@ public class KeptSet implements Set<String>, Synchronizable {
 			changed = true;
 
 		return changed;
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
@@ -319,10 +314,9 @@ public class KeptSet implements Set<String>, Synchronizable {
 			changed = true;
 
 		return changed;
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }

@@ -17,7 +17,6 @@
  */
 package net.killa.kept;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -110,13 +109,7 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 						+ s, this.watcher, null),
 					this.elementClass));
 		    }
-		} catch (final KeeperException.SessionExpiredException e) {
-		    throw new RuntimeException(e.getClass().getSimpleName()
-			    + " caught", e);
-		} catch (final ClassNotFoundException e) {
-		    throw new RuntimeException(e.getClass().getSimpleName()
-			    + " caught", e);
-		} catch (final IOException e) {
+		} catch (final Exception e) {
 		    throw new RuntimeException(e.getClass().getSimpleName()
 			    + " caught", e);
 		}
@@ -185,16 +178,7 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 			this.elementClass);
 		this.removeUnsynchronized(index);
 		return previous;
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final KeeperException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final ClassNotFoundException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final IOException e) {
+	    } catch (final Exception e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -217,16 +201,7 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 	    this.keeper.setData(path,
 		    Transformer.objectToBytes(element, this.elementClass), -1);
 	    return previous;
-	} catch (final KeeperException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (final InterruptedException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (final ClassNotFoundException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (final IOException e) {
+	} catch (final Exception e) {
 	    throw new RuntimeException(
 		    e.getClass().getSimpleName() + " caught", e);
 	}

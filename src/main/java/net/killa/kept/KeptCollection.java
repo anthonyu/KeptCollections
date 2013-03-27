@@ -129,10 +129,7 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 			    this.elementClass));
 	    } catch (final KeeperException.SessionExpiredException e) {
 		// ignore it
-	    } catch (final ClassNotFoundException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final IOException e) {
+	    } catch (final Exception e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -185,13 +182,7 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 
 	try {
 	    return this.addUnsynchronized(o);
-	} catch (final KeeperException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (final InterruptedException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (final IOException e) {
+	} catch (final Exception e) {
 	    throw new RuntimeException(
 		    e.getClass().getSimpleName() + " caught", e);
 	}
@@ -206,23 +197,13 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
     public boolean addAll(final Collection<? extends T> c) {
 	boolean modified = false;
 
-	for (final Object o : c)
-	    try {
-		if (o == null)
-		    throw new IllegalArgumentException("nulls not allowed");
+	for (final Object o : c) {
+	    @SuppressWarnings("unchecked")
+	    final T t = (T) o;
 
-		if (this.addUnsynchronized(o))
-		    modified = true;
-	    } catch (final KeeperException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final IOException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    }
+	    if (this.add(t))
+		modified = true;
+	}
 
 	return modified;
     }
@@ -236,10 +217,7 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 		    this.keeper.delete(this.znode + '/' + s, -1);
 
 		this.synchronize();
-	    } catch (final KeeperException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final InterruptedException e) {
+	    } catch (final Exception e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -286,10 +264,7 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 	    public void remove() {
 		try {
 		    KeptCollection.this.removeUnsynchronized(this.i);
-		} catch (final InterruptedException e) {
-		    throw new RuntimeException(e.getClass().getSimpleName()
-			    + " caught", e);
-		} catch (final KeeperException e) {
+		} catch (final Exception e) {
 		    throw new RuntimeException(e.getClass().getSimpleName()
 			    + " caught", e);
 		}
@@ -301,13 +276,7 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
     public boolean remove(final Object o) {
 	try {
 	    return this.removeUnsynchronized(o);
-	} catch (final InterruptedException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (final KeeperException e) {
-	    throw new RuntimeException(
-		    e.getClass().getSimpleName() + " caught", e);
-	} catch (final IOException e) {
+	} catch (final Exception e) {
 	    throw new RuntimeException(
 		    e.getClass().getSimpleName() + " caught", e);
 	}
@@ -324,13 +293,7 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 			modified = true;
 
 		return modified;
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final KeeperException e) {
-		throw new RuntimeException(e.getClass().getSimpleName()
-			+ " caught", e);
-	    } catch (final IOException e) {
+	    } catch (final Exception e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -356,12 +319,9 @@ public class KeptCollection<T> implements Collection<T>, Synchronizable {
 			changed = true;
 
 		return changed;
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
-	    } catch (final IOException e) {
-		throw new RuntimeException("IOException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }

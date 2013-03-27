@@ -174,11 +174,9 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 			Thread.sleep(50);
 		    }
 		}
-	    } catch (final KeeperException f) {
-		throw new RuntimeException("KeeperException caught", f);
-	    } catch (final InterruptedException f) {
-		// someone interrupted us. we need to let go
-		throw new RuntimeException("InterruptedException caught", f);
+	    } catch (final Exception f) {
+		throw new RuntimeException(f.getClass().getSimpleName()
+			+ " caught", f);
 	    }
 	}
     }
@@ -228,10 +226,9 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 		for (final String s : this.keeper.getChildren(this.znode,
 			this.watcher))
 		    this.keeper.delete(this.znode + '/' + s, -1);
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
@@ -283,10 +280,9 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 	synchronized (this.map) {
 	    try {
 		return this.putUnsynchronized(key, value);
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
@@ -304,10 +300,9 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 		for (final Entry<? extends String, ? extends String> entry : m
 			.entrySet())
 		    this.putUnsynchronized(entry.getKey(), entry.getValue());
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
@@ -323,10 +318,9 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 	synchronized (this.map) {
 	    try {
 		return this.removeUnsynchronized(key);
-	    } catch (final KeeperException e) {
-		throw new RuntimeException("KeeperException caught", e);
-	    } catch (final InterruptedException e) {
-		throw new RuntimeException("InterruptedException caught", e);
+	    } catch (final Exception e) {
+		throw new RuntimeException(e.getClass().getSimpleName()
+			+ " caught", e);
 	    }
 	}
     }
