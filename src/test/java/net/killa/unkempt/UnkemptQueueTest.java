@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 
 import net.killa.kept.BaseKeptUtil;
-import net.killa.kept.KeptQueue;
 import net.killa.kept.SerializablePerson;
 
 import org.apache.zookeeper.CreateMode;
@@ -30,13 +29,13 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptQueueTest extends BaseKeptUtil {
+public class UnkemptQueueTest extends BaseKeptUtil {
     {
 	this.parent = "/testunkemptqueue";
     }
 
     @Test
-    public void testKeptStringQueue() throws Exception {
+    public void testUnkemptStringQueue() throws Exception {
 	final UnkemptQueue<String> kq = new UnkemptQueue<String>(String.class,
 		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
@@ -68,7 +67,7 @@ public class KeptQueueTest extends BaseKeptUtil {
     }
 
     @Test
-    public void testKeptNonPrimitiveQueue() throws Exception {
+    public void testUnkemptNonPrimitiveQueue() throws Exception {
 	final UnkemptQueue<SerializablePerson> kq = new UnkemptQueue<SerializablePerson>(
 		SerializablePerson.class, this.keeper, this.parent,
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
@@ -104,9 +103,9 @@ public class KeptQueueTest extends BaseKeptUtil {
     }
 
     @Test(expected = NoSuchElementException.class)
-    public void testKeptQueueEmptyElement() throws IOException,
+    public void testUnkemptQueueEmptyElement() throws IOException,
 	    KeeperException, InterruptedException {
-	final KeptQueue<Object> kq = new KeptQueue<Object>(Object.class,
+	final UnkemptQueue<Object> kq = new UnkemptQueue<Object>(Object.class,
 		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
@@ -114,9 +113,9 @@ public class KeptQueueTest extends BaseKeptUtil {
     }
 
     @Test(expected = NoSuchElementException.class)
-    public void testKeptQueueEmptyRemove() throws IOException, KeeperException,
-	    InterruptedException {
-	final KeptQueue<Object> kq = new KeptQueue<Object>(Object.class,
+    public void testUnkemptQueueEmptyRemove() throws IOException,
+	    KeeperException, InterruptedException {
+	final UnkemptQueue<Object> kq = new UnkemptQueue<Object>(Object.class,
 		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
