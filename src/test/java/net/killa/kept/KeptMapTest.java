@@ -25,16 +25,14 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptMapTest extends BaseKeptUtil {
-    {
-	this.parent = "/testkeptmap";
-    }
-
+public class KeptMapTest extends KeptTestBase {
     @Test
     public void testKeptMap() throws IOException, KeeperException,
 	    InterruptedException {
-	final KeptMap s = new KeptMap(this.keeper, this.parent,
-		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	final String parent = this.getParent();
+
+	final KeptMap s = new KeptMap(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the map are reflected in the znode
 	String znode = Long.toString(System.currentTimeMillis());
@@ -44,10 +42,9 @@ public class KeptMapTest extends BaseKeptUtil {
 
 	s.put(znode, value);
 
-	Assert.assertNotNull(this.keeper
-		.exists(this.parent + '/' + znode, null));
+	Assert.assertNotNull(this.keeper.exists(parent + '/' + znode, null));
 
-	this.keeper.delete(this.parent + '/' + znode, -1);
+	this.keeper.delete(parent + '/' + znode, -1);
 
 	// wait for it to take effect
 	Thread.sleep(100);
@@ -59,7 +56,7 @@ public class KeptMapTest extends BaseKeptUtil {
 
 	Assert.assertFalse(s.containsKey(znode));
 
-	this.keeper.create(this.parent + '/' + znode, value.getBytes(),
+	this.keeper.create(parent + '/' + znode, value.getBytes(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	// wait for it to take effect
@@ -70,13 +67,13 @@ public class KeptMapTest extends BaseKeptUtil {
 
 	s.remove(znode);
 
-	Assert.assertNull(this.keeper.exists(this.parent + '/' + znode, null));
+	Assert.assertNull(this.keeper.exists(parent + '/' + znode, null));
     }
 
     @Test
     public void testKeptMapClear() throws IOException, KeeperException,
 	    InterruptedException {
-	final KeptMap km = new KeptMap(this.keeper, this.parent,
+	final KeptMap km = new KeptMap(this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	km.put("one", "value");
@@ -103,7 +100,7 @@ public class KeptMapTest extends BaseKeptUtil {
     @Test
     public void testKeptMapOverwrite() throws KeeperException,
 	    InterruptedException {
-	final KeptMap km = new KeptMap(this.keeper, this.parent,
+	final KeptMap km = new KeptMap(this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	Assert.assertNull("value not previously null", km.put("one", "value"));
@@ -125,5 +122,10 @@ public class KeptMapTest extends BaseKeptUtil {
 	Assert.assertNull("value not previously null", km.put("two", "value"));
 	Assert.assertEquals("value not previously equal", "value",
 		km.put("two", "eulav"));
+    }
+
+    @Override
+    public String getParent() {
+	return "testkeptmap";
     }
 }

@@ -33,12 +33,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-public class BaseKeptUtil {
+public abstract class KeptTestBase {
     private static final int CLIENT_PORT = new Random().nextInt(55535) + 10000;
 
     private static NIOServerCnxnFactory nioServerCnxnFactory;
 
-    protected String parent;
     protected ZooKeeper keeper;
 
     @BeforeClass
@@ -47,11 +46,11 @@ public class BaseKeptUtil {
 		"zookeeper").getAbsoluteFile();
 	final ZooKeeperServer server = new ZooKeeperServer(dir, dir, 2000);
 
-	BaseKeptUtil.nioServerCnxnFactory = new NIOServerCnxnFactory();
-	BaseKeptUtil.nioServerCnxnFactory.configure(new InetSocketAddress(
-		BaseKeptUtil.CLIENT_PORT), 5000);
+	KeptTestBase.nioServerCnxnFactory = new NIOServerCnxnFactory();
+	KeptTestBase.nioServerCnxnFactory.configure(new InetSocketAddress(
+		KeptTestBase.CLIENT_PORT), 5000);
 
-	BaseKeptUtil.nioServerCnxnFactory.startup(server);
+	KeptTestBase.nioServerCnxnFactory.startup(server);
     }
 
     @Before
@@ -62,20 +61,25 @@ public class BaseKeptUtil {
 	final CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
 	watcher.setLatch(latch);
 	this.keeper = new ZooKeeper("localhost:"
-		+ Integer.toString(BaseKeptUtil.CLIENT_PORT), 20000, watcher);
+		+ Integer.toString(KeptTestBase.CLIENT_PORT), 20000, watcher);
 	if (!latch.await(5, TimeUnit.SECONDS))
 	    throw new RuntimeException("unable to connect to server");
     }
 
     @After
     public void after() throws InterruptedException, KeeperException {
-	for (final String s : this.keeper.getChildren(this.parent, false))
-	    this.keeper.delete(this.parent + '/' + s, -1);
+	final String parent = this.getParent();
+
+	for (final String s : this.keeper.getChildren(parent, false))
+	    this.keeper.delete(parent + '/' + s, -1);
+
 	this.keeper.close();
     }
 
     @AfterClass
     public static void afterClass() {
-	BaseKeptUtil.nioServerCnxnFactory.shutdown();
+	KeptTestBase.nioServerCnxnFactory.shutdown();
     }
+
+    public abstract String getParent();
 }

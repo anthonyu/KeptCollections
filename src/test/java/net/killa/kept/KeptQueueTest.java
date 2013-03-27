@@ -26,15 +26,11 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptQueueTest extends BaseKeptUtil {
-    {
-	this.parent = "/testkeptqueue";
-    }
-
+public class KeptQueueTest extends KeptTestBase {
     @Test
     public void testKeptStringQueue() throws Exception {
 	final KeptQueue<String> kq = new KeptQueue<String>(String.class,
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		this.keeper, this.getParent(), Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	final String payload1 = Long.toString(System.currentTimeMillis());
@@ -72,7 +68,7 @@ public class KeptQueueTest extends BaseKeptUtil {
     @Test
     public void testKeptNonPrimitiveQueue() throws Exception {
 	final KeptQueue<SerializablePerson> kq = new KeptQueue<SerializablePerson>(
-		SerializablePerson.class, this.keeper, this.parent,
+		SerializablePerson.class, this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final SerializablePerson person1 = new SerializablePerson();
@@ -115,7 +111,7 @@ public class KeptQueueTest extends BaseKeptUtil {
     public void testKeptQueueEmptyElement() throws IOException,
 	    KeeperException, InterruptedException {
 	final KeptQueue<Object> kq = new KeptQueue<Object>(Object.class,
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		this.keeper, this.getParent(), Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	kq.element();
@@ -125,9 +121,14 @@ public class KeptQueueTest extends BaseKeptUtil {
     public void testKeptQueueEmptyRemove() throws IOException, KeeperException,
 	    InterruptedException {
 	final KeptQueue<Object> kq = new KeptQueue<Object>(Object.class,
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		this.keeper, this.getParent(), Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	kq.remove();
+    }
+
+    @Override
+    public String getParent() {
+	return "testkeptqueue";
     }
 }

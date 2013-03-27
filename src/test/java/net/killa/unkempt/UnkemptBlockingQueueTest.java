@@ -21,23 +21,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import net.killa.kept.BaseKeptUtil;
+import net.killa.kept.KeptTestBase;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class UnkemptBlockingQueueTest extends BaseKeptUtil {
-    {
-	this.parent = "/testunkemptyblockingqueue";
-    }
-
+public class UnkemptBlockingQueueTest extends KeptTestBase {
     @Test
     public void testKeptStringQueue() throws Exception {
 	final UnkemptBlockingQueue<String> kbq = new UnkemptBlockingQueue<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	Assert.assertNull(kbq.poll(1, TimeUnit.SECONDS));
 
@@ -59,5 +55,10 @@ public class UnkemptBlockingQueueTest extends BaseKeptUtil {
 
 	Assert.assertEquals("not equal", source, sink);
 	Assert.assertEquals("wrong size", 0, kbq.size());
+    }
+
+    @Override
+    public String getParent() {
+	return "/testunkemptyblockingqueue";
     }
 }

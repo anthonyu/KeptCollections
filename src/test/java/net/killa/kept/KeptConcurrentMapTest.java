@@ -25,16 +25,12 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptConcurrentMapTest extends BaseKeptUtil {
-    {
-	this.parent = "/testconcurrentmap";
-    }
-
+public class KeptConcurrentMapTest extends KeptTestBase {
     @Test
     public void testKeptConcurrentMap() throws IOException, KeeperException,
 	    InterruptedException {
 	final KeptConcurrentMap kcm = new KeptConcurrentMap(this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+		this.getParent(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final String payload1 = Long.toString(System.currentTimeMillis());
 
@@ -100,5 +96,10 @@ public class KeptConcurrentMapTest extends BaseKeptUtil {
 
 	Assert.assertFalse("not false", kcm.replace("uest",
 		Long.toString(System.currentTimeMillis()), payload2));
+    }
+
+    @Override
+    public String getParent() {
+	return "/testconcurrentmap";
     }
 }

@@ -23,15 +23,11 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptListTest extends BaseKeptUtil {
-    {
-	this.parent = "/testkeptlist";
-    }
-
+public class KeptListTest extends KeptTestBase {
     @Test
     public void testKeptStringList() throws Exception {
 	final KeptList<String> kl = new KeptList<String>(String.class,
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		this.keeper, this.getParent(), Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	final String payload = Long.toString(System.currentTimeMillis());
@@ -62,7 +58,7 @@ public class KeptListTest extends BaseKeptUtil {
     @Test
     public void testKeptLongList() throws Exception {
 	final KeptList<Long> kl = new KeptList<Long>(Long.class, this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+		this.getParent(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final long payload = System.currentTimeMillis();
 	Thread.sleep(100);
@@ -92,7 +88,7 @@ public class KeptListTest extends BaseKeptUtil {
     @Test
     public void testKeptNonprimitiveList() throws Exception {
 	final KeptList<SerializablePerson> kl = new KeptList<SerializablePerson>(
-		SerializablePerson.class, this.keeper, this.parent,
+		SerializablePerson.class, this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final SerializablePerson person1 = new SerializablePerson();
@@ -135,10 +131,14 @@ public class KeptListTest extends BaseKeptUtil {
     public void testKeptCollectionBigIndex() throws KeeperException,
 	    InterruptedException {
 	final KeptList<String> kl = new KeptList<String>(String.class,
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		this.keeper, this.getParent(), Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	kl.set(Integer.MAX_VALUE, "wtf");
     }
 
+    @Override
+    public String getParent() {
+	return "/testkeptlist";
+    }
 }

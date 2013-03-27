@@ -20,7 +20,7 @@ package net.killa.unkempt;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-import net.killa.kept.BaseKeptUtil;
+import net.killa.kept.KeptTestBase;
 import net.killa.kept.SerializablePerson;
 
 import org.apache.zookeeper.CreateMode;
@@ -29,15 +29,11 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class UnkemptQueueTest extends BaseKeptUtil {
-    {
-	this.parent = "/testunkemptqueue";
-    }
-
+public class UnkemptQueueTest extends KeptTestBase {
     @Test
     public void testUnkemptStringQueue() throws Exception {
 	final UnkemptQueue<String> kq = new UnkemptQueue<String>(String.class,
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		this.keeper, this.getParent(), Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	final String payload1 = Long.toString(System.currentTimeMillis());
@@ -69,7 +65,7 @@ public class UnkemptQueueTest extends BaseKeptUtil {
     @Test
     public void testUnkemptNonPrimitiveQueue() throws Exception {
 	final UnkemptQueue<SerializablePerson> kq = new UnkemptQueue<SerializablePerson>(
-		SerializablePerson.class, this.keeper, this.parent,
+		SerializablePerson.class, this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final SerializablePerson person1 = new SerializablePerson();
@@ -106,7 +102,7 @@ public class UnkemptQueueTest extends BaseKeptUtil {
     public void testUnkemptQueueEmptyElement() throws IOException,
 	    KeeperException, InterruptedException {
 	final UnkemptQueue<Object> kq = new UnkemptQueue<Object>(Object.class,
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		this.keeper, this.getParent(), Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	kq.element();
@@ -116,9 +112,14 @@ public class UnkemptQueueTest extends BaseKeptUtil {
     public void testUnkemptQueueEmptyRemove() throws IOException,
 	    KeeperException, InterruptedException {
 	final UnkemptQueue<Object> kq = new UnkemptQueue<Object>(Object.class,
-		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		this.keeper, this.getParent(), Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	kq.remove();
+    }
+
+    @Override
+    public String getParent() {
+	return "/testunkemptqueue";
     }
 }

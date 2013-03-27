@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.killa.kept.BaseKeptUtil;
+import net.killa.kept.KeptTestBase;
 import net.killa.kept.Transformer;
 
 import org.apache.zookeeper.CreateMode;
@@ -33,17 +33,15 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class UnkemptCollectionTest extends BaseKeptUtil {
-    {
-	this.parent = "/testunkemptcollection";
-    }
-
+public class UnkemptCollectionTest extends KeptTestBase {
     @Ignore
     @Test
     public void testUnkemptCollection() throws IOException, KeeperException,
 	    InterruptedException {
+	final String parent = this.getParent();
+
 	final UnkemptCollection<String> kc = new UnkemptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		String.class, this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the collection are reflected in the
@@ -54,14 +52,14 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
 	kc.add(payload);
 
 	String znode = null;
-	for (final String node : this.keeper.getChildren(this.parent, false))
-	    if (this.keeper.exists(this.parent + '/' + node, null) != null) {
+	for (final String node : this.keeper.getChildren(parent, false))
+	    if (this.keeper.exists(parent + '/' + node, null) != null) {
 		znode = node;
 		break;
 	    }
 	Assert.assertNotNull("added entry does not exist in zookeeper", znode);
 
-	this.keeper.delete(this.parent + '/' + znode, -1);
+	this.keeper.delete(parent + '/' + znode, -1);
 
 	Assert.assertFalse(kc.contains(payload));
 
@@ -71,7 +69,7 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
 
 	Assert.assertFalse(kc.contains(payload));
 
-	final String fullPath = this.keeper.create(this.parent + "/node-",
+	final String fullPath = this.keeper.create(parent + "/node-",
 		Transformer.objectToBytes(payload, String.class),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
@@ -88,8 +86,8 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
     public void testUnkemptCollectionClear() throws IOException,
 	    KeeperException, InterruptedException {
 	final UnkemptCollection<String> ks = new UnkemptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	ks.add("one");
 	ks.add("two");
@@ -115,8 +113,8 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
 	hs.add("three");
 
 	final UnkemptCollection<String> s = new UnkemptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	s.addAll(hs);
 
@@ -149,8 +147,8 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
 	al2.add("four");
 
 	final UnkemptCollection<String> kc = new UnkemptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kc.addAll(al1);
 
@@ -167,8 +165,8 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
     public void testUnkemptCollectionAddNull() throws IOException,
 	    KeeperException, InterruptedException {
 	final UnkemptCollection<Object> kc = new UnkemptCollection<Object>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kc.add(null);
     }
@@ -177,8 +175,8 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
     public void testUnkemptCollectionAddAllNull() throws IOException,
 	    KeeperException, InterruptedException {
 	final UnkemptCollection<String> kc = new UnkemptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kc.addAll(Arrays.asList(new String[] { null }));
     }
@@ -187,8 +185,8 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
     public void testUnkemptCollectionIterator() throws KeeperException,
 	    InterruptedException, IOException, ClassNotFoundException {
 	final UnkemptCollection<String> ks = new UnkemptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	ks.add("one");
 	ks.add("two");
@@ -200,5 +198,10 @@ public class UnkemptCollectionTest extends BaseKeptUtil {
 	Assert.assertEquals("not equal", "one", it.next());
 	Assert.assertEquals("not equal", "two", it.next());
 	Assert.assertEquals("not equal", "three", it.next());
+    }
+
+    @Override
+    public String getParent() {
+	return "/testunkemptcollection";
     }
 }

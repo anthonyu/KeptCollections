@@ -26,16 +26,12 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptBlockingQueueTest extends BaseKeptUtil {
-    {
-	this.parent = "/testkeptqueue";
-    }
-
+public class KeptBlockingQueueTest extends KeptTestBase {
     @Test
     public void testKeptStringQueue() throws Exception {
 	final KeptBlockingQueue<String> kbq = new KeptBlockingQueue<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	Assert.assertNull(kbq.poll(1, TimeUnit.SECONDS));
 
@@ -61,5 +57,10 @@ public class KeptBlockingQueueTest extends BaseKeptUtil {
 
 	Assert.assertEquals("not equal", source, sink);
 	Assert.assertEquals("wrong size", 0, kbq.size());
+    }
+
+    @Override
+    public String getParent() {
+	return "/testkeptqueue";
     }
 }

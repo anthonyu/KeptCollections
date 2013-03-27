@@ -29,16 +29,14 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptCollectionTest extends BaseKeptUtil {
-    {
-	this.parent = "/testkeptcollection";
-    }
-
+public class KeptCollectionTest extends KeptTestBase {
     @Test
     public void testKeptCollection() throws IOException, KeeperException,
 	    InterruptedException {
+	final String parent = this.getParent();
+
 	final KeptCollection<String> kc = new KeptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		String.class, this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the collection are reflected in the
@@ -49,14 +47,14 @@ public class KeptCollectionTest extends BaseKeptUtil {
 	kc.add(payload);
 
 	String znode = null;
-	for (final String node : this.keeper.getChildren(this.parent, false))
-	    if (this.keeper.exists(this.parent + '/' + node, null) != null) {
+	for (final String node : this.keeper.getChildren(parent, false))
+	    if (this.keeper.exists(parent + '/' + node, null) != null) {
 		znode = node;
 		break;
 	    }
 	Assert.assertNotNull("added entry does not exist in zookeeper", znode);
 
-	this.keeper.delete(this.parent + '/' + znode, -1);
+	this.keeper.delete(parent + '/' + znode, -1);
 
 	// wait for it to take effect
 	Thread.sleep(100);
@@ -69,7 +67,7 @@ public class KeptCollectionTest extends BaseKeptUtil {
 
 	Assert.assertFalse(kc.contains(payload));
 
-	final String fullPath = this.keeper.create(this.parent + "/node-",
+	final String fullPath = this.keeper.create(parent + "/node-",
 		Transformer.objectToBytes(payload, String.class),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
@@ -91,8 +89,8 @@ public class KeptCollectionTest extends BaseKeptUtil {
     public void testKeptCollectionClear() throws IOException, KeeperException,
 	    InterruptedException {
 	final KeptCollection<String> ks = new KeptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	ks.add("one");
 	ks.add("two");
@@ -126,8 +124,8 @@ public class KeptCollectionTest extends BaseKeptUtil {
 	hs.add("three");
 
 	final KeptCollection<String> s = new KeptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	s.addAll(hs);
 
@@ -164,8 +162,8 @@ public class KeptCollectionTest extends BaseKeptUtil {
 	al2.add("four");
 
 	final KeptCollection<String> kc = new KeptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kc.addAll(al1);
 
@@ -188,8 +186,8 @@ public class KeptCollectionTest extends BaseKeptUtil {
     public void testKeptCollectionAddNull() throws IOException,
 	    KeeperException, InterruptedException {
 	final KeptCollection<Object> kc = new KeptCollection<Object>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kc.add(null);
     }
@@ -198,8 +196,8 @@ public class KeptCollectionTest extends BaseKeptUtil {
     public void testKeptCollectionAddAllNull() throws IOException,
 	    KeeperException, InterruptedException {
 	final KeptCollection<String> kc = new KeptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	kc.addAll(Arrays.asList(new String[] { null }));
     }
@@ -208,8 +206,8 @@ public class KeptCollectionTest extends BaseKeptUtil {
     public void testKeptCollectionIterator() throws IOException,
 	    KeeperException, InterruptedException {
 	final KeptCollection<String> ks = new KeptCollection<String>(
-		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+		String.class, this.keeper, this.getParent(),
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	ks.add("one");
 	ks.add("two");
@@ -234,5 +232,10 @@ public class KeptCollectionTest extends BaseKeptUtil {
 	Assert.assertFalse("collection does contain two", ks.contains("two"));
 	Assert.assertTrue("collection does not contain three",
 		ks.contains("three"));
+    }
+
+    @Override
+    public String getParent() {
+	return "/testkeptcollection";
     }
 }

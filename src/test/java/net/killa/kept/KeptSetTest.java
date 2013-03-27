@@ -27,15 +27,13 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptSetTest extends BaseKeptUtil {
-    {
-	this.parent = "/testkeptset";
-    }
-
+public class KeptSetTest extends KeptTestBase {
     @Test
     public void testKeptSet() throws IOException, KeeperException,
 	    InterruptedException {
-	final KeptSet ks = new KeptSet(this.keeper, this.parent,
+	final String parent = this.getParent();
+
+	final KeptSet ks = new KeptSet(this.keeper, parent,
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the set are reflected in the znode
@@ -45,10 +43,9 @@ public class KeptSetTest extends BaseKeptUtil {
 
 	ks.add(znode);
 
-	Assert.assertNotNull(this.keeper
-		.exists(this.parent + '/' + znode, null));
+	Assert.assertNotNull(this.keeper.exists(parent + '/' + znode, null));
 
-	this.keeper.delete(this.parent + '/' + znode, -1);
+	this.keeper.delete(parent + '/' + znode, -1);
 
 	// wait for it to take effect
 	Thread.sleep(50);
@@ -60,7 +57,7 @@ public class KeptSetTest extends BaseKeptUtil {
 
 	Assert.assertFalse(ks.contains(znode));
 
-	this.keeper.create(this.parent + '/' + znode, new byte[0],
+	this.keeper.create(parent + '/' + znode, new byte[0],
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	// wait for it to take effect
@@ -70,13 +67,13 @@ public class KeptSetTest extends BaseKeptUtil {
 
 	ks.remove(znode);
 
-	Assert.assertNull(this.keeper.exists(this.parent + '/' + znode, null));
+	Assert.assertNull(this.keeper.exists(parent + '/' + znode, null));
     }
 
     @Test
     public void testKeptSetReAdd() throws IOException, KeeperException,
 	    InterruptedException {
-	final KeptSet ks = new KeptSet(this.keeper, this.parent,
+	final KeptSet ks = new KeptSet(this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the set are reflected in the znode
@@ -95,7 +92,7 @@ public class KeptSetTest extends BaseKeptUtil {
     @Test
     public void testKeptSetClear() throws IOException, KeeperException,
 	    InterruptedException {
-	final KeptSet ks = new KeptSet(this.keeper, this.parent,
+	final KeptSet ks = new KeptSet(this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	ks.add("one");
@@ -128,7 +125,7 @@ public class KeptSetTest extends BaseKeptUtil {
 	hs.add("two");
 	hs.add("three");
 
-	final KeptSet s = new KeptSet(this.keeper, this.parent,
+	final KeptSet s = new KeptSet(this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	s.addAll(hs);
@@ -154,7 +151,7 @@ public class KeptSetTest extends BaseKeptUtil {
 	hs2.add("three");
 	hs2.add("four");
 
-	final KeptSet ks = new KeptSet(this.keeper, this.parent,
+	final KeptSet ks = new KeptSet(this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	ks.addAll(hs1);
@@ -170,5 +167,10 @@ public class KeptSetTest extends BaseKeptUtil {
 
 	Assert.assertTrue("set does not contain all", ks.containsAll(hs1));
 	Assert.assertEquals("sets are not the same size", hs1.size(), ks.size());
+    }
+
+    @Override
+    public String getParent() {
+	return "testkeptset";
     }
 }

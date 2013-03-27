@@ -26,7 +26,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.After;
 import org.junit.Test;
 
-public class KeptLockTest extends BaseKeptUtil {
+public class KeptLockTest extends KeptTestBase {
     private static final String LOCK = "/testkeptlock";
 
     @Override
@@ -83,5 +83,10 @@ public class KeptLockTest extends BaseKeptUtil {
 		Ids.OPEN_ACL_UNSAFE);
 
 	kl.unlock();
+    }
+
+    @Override
+    public String getParent() {
+	return null;
     }
 }
