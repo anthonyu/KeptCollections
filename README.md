@@ -35,26 +35,20 @@ collections are the names of the classes and their constructors.
 
 For instance, where a Map from Java Collections could be instantiated like:
 
-<code>
     Map<String, String> map = new HashMap<String, String>();
-</code>
 
 KeptCollections is instead instantiated like:
 
-<code>
     Zookeeper zk = new ZooKeeper("localhost:2181", 20000, watcher);
 
     Map<String, String> map =
       new KeptMap(zk, "/mymap", Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-</code>
 
 Both are accessed the same way:
 
-<code>
     map.put("key", "value");
 
     String value = map.get("key");
-</code>
 
 See the JavaDoc help for more information.
 
@@ -105,4 +99,4 @@ lock and barrier related, that are already implemented by Menagerie
 Where can I get a Jar?
 ----------------------
 
-Right <a href="https://github.com/downloads/anthonyu/KeptCollections/kept-collections-0.9.1.jar">here</a>.
+Right [here](https://github.com/downloads/anthonyu/KeptCollections/kept-collections-0.9.1.jar).
