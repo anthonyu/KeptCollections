@@ -30,39 +30,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class KeptConcurrentMapTest {
-    private static final String PARENT = "/testkeptconcurrentmap";
-
-    private ZooKeeper keeper;
-
-    @Before
-    public void before() throws IOException, InterruptedException,
-	    KeeperException {
-	CountDownLatch latch = new CountDownLatch(1);
-
-	// FIXME: set up a zookeeper server in process
-	CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
-	watcher.setLatch(latch);
-	this.keeper = new ZooKeeper("localhost:2181", 20000, watcher);
-	if (!latch.await(5, TimeUnit.SECONDS))
-	    throw new RuntimeException("unable to connect to server");
-    }
-
-    @After
-    public void after() throws InterruptedException, KeeperException {
-	// delete the children
-	for (String s : this.keeper.getChildren(KeptConcurrentMapTest.PARENT,
-		false))
-	    this.keeper.delete(KeptConcurrentMapTest.PARENT + '/' + s, -1);
-	// close the client
-	this.keeper.close();
+public class KeptConcurrentMapTest extends BaseKeptUtil {
+    {
+	this.parent = "/testconcurrentmap";
     }
 
     @Test
     public void testKeptConcurrentMap() throws IOException, KeeperException,
 	    InterruptedException {
 	KeptConcurrentMap kcm = new KeptConcurrentMap(this.keeper,
-		KeptConcurrentMapTest.PARENT, Ids.OPEN_ACL_UNSAFE,
+		this.parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	String payload1 = Long.toString(System.currentTimeMillis());
