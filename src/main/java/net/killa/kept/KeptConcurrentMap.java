@@ -64,8 +64,9 @@ public class KeptConcurrentMap extends KeptMap implements
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public KeptConcurrentMap(ZooKeeper keeper, String znode, List<ACL> acl,
-	    CreateMode createMode) throws KeeperException, InterruptedException {
+    public KeptConcurrentMap(final ZooKeeper keeper, final String znode,
+	    final List<ACL> acl, final CreateMode createMode)
+	    throws KeeperException, InterruptedException {
 	super(keeper, znode, acl, createMode);
 
 	this.keeper = keeper;
@@ -75,19 +76,19 @@ public class KeptConcurrentMap extends KeptMap implements
     }
 
     @Override
-    public String putIfAbsent(String key, String value) {
+    public String putIfAbsent(final String key, final String value) {
 	synchronized (this.map) {
 	    try {
 		this.keeper.create(this.znode + '/' + key, value.getBytes(),
 			this.acl, this.createMode);
 
 		return null;
-	    } catch (KeeperException.NodeExistsException e) {
+	    } catch (final KeeperException.NodeExistsException e) {
 		return this.get(key);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -95,30 +96,29 @@ public class KeptConcurrentMap extends KeptMap implements
     }
 
     @Override
-    public boolean remove(Object key, Object value) {
+    public boolean remove(final Object key, final Object value) {
 	synchronized (this.map) {
 	    try {
-		Stat stat = new Stat();
+		final Stat stat = new Stat();
 
-		String string = new String(this.keeper.getData(this.znode + '/'
-			+ key, true, stat));
+		final String string = new String(this.keeper.getData(this.znode
+			+ '/' + key, true, stat));
 
 		if (string.equals(value.toString())) {
 		    this.keeper.delete(this.znode + '/' + key,
 			    stat.getVersion());
 
 		    return true;
-		} else {
+		} else
 		    return false;
-		}
-	    } catch (KeeperException.NoNodeException e) {
+	    } catch (final KeeperException.NoNodeException e) {
 		return false;
-	    } catch (KeeperException.BadVersionException e) {
+	    } catch (final KeeperException.BadVersionException e) {
 		return false;
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -126,22 +126,22 @@ public class KeptConcurrentMap extends KeptMap implements
     }
 
     @Override
-    public String replace(String key, String value) {
+    public String replace(final String key, final String value) {
 	synchronized (this.map) {
 	    try {
-		String data = new String(this.keeper.getData(this.znode + '/'
-			+ key, true, null));
+		final String data = new String(this.keeper.getData(this.znode
+			+ '/' + key, true, null));
 
 		this.keeper.setData(this.znode + '/' + key, value.getBytes(),
 			-1);
 
 		return data;
-	    } catch (KeeperException.NoNodeException e) {
+	    } catch (final KeeperException.NoNodeException e) {
 		return null;
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -149,30 +149,30 @@ public class KeptConcurrentMap extends KeptMap implements
     }
 
     @Override
-    public boolean replace(String key, String oldValue, String newValue) {
+    public boolean replace(final String key, final String oldValue,
+	    final String newValue) {
 	synchronized (this.map) {
 	    try {
-		Stat stat = new Stat();
+		final Stat stat = new Stat();
 
-		String data = new String(this.keeper.getData(this.znode + '/'
-			+ key, true, stat));
+		final String data = new String(this.keeper.getData(this.znode
+			+ '/' + key, true, stat));
 
 		if (data.equals(oldValue.toString())) {
 		    this.keeper.setData(this.znode + '/' + key,
 			    newValue.getBytes(), stat.getVersion());
 
 		    return true;
-		} else {
+		} else
 		    return false;
-		}
-	    } catch (KeeperException.NoNodeException e) {
+	    } catch (final KeeperException.NoNodeException e) {
 		return false;
-	    } catch (KeeperException.BadVersionException e) {
+	    } catch (final KeeperException.BadVersionException e) {
 		return false;
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }

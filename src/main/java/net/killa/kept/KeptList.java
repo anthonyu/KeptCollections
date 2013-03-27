@@ -97,32 +97,35 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 		    this.indices.clear();
 		    this.elements.clear();
 
-		    List<String> children = this.keeper.getChildren(this.znode,
-			    this.watcher);
-		    
+		    final List<String> children = this.keeper.getChildren(
+			    this.znode, this.watcher);
+
 		    Collections.sort(children);
 
-		    for (String s : children) {
-			this.indices.add((this.znode + '/' + s));
-			this.elements.add((T) Transformer.bytesToObject(
-				this.keeper.getData(this.znode + '/' + s,
-					this.watcher, null), elementClass));
+		    for (final String s : children) {
+			this.indices.add(this.znode + '/' + s);
+			this.elements
+				.add((T) Transformer.bytesToObject(
+					this.keeper.getData(this.znode + '/'
+						+ s, this.watcher, null),
+					this.elementClass));
 		    }
-		} catch (KeeperException.SessionExpiredException e) {
+		} catch (final KeeperException.SessionExpiredException e) {
 		    throw new RuntimeException(e.getClass().getSimpleName()
 			    + " caught", e);
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 		    throw new RuntimeException(e.getClass().getSimpleName()
 			    + " caught", e);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 		    throw new RuntimeException(e.getClass().getSimpleName()
 			    + " caught", e);
 		}
 	    }
     }
 
-    protected boolean removeUnsynchronized(int i) throws InterruptedException,
-	    KeeperException {
+    @Override
+    protected boolean removeUnsynchronized(final int i)
+	    throws InterruptedException, KeeperException {
 	this.keeper.delete(this.indices.get(i), -1);
 
 	return true;
@@ -130,18 +133,18 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 
     /** Not supported */
     @Override
-    public void add(int index, T element) {
+    public void add(final int index, final T element) {
 	throw new UnsupportedOperationException();
     }
 
     /** Not supported */
     @Override
-    public boolean addAll(int index, Collection<? extends T> c) {
+    public boolean addAll(final int index, final Collection<? extends T> c) {
 	throw new UnsupportedOperationException();
     }
 
     @Override
-    public T get(int index) {
+    public T get(final int index) {
 	if (index >= this.size())
 	    throw new IndexOutOfBoundsException(index + " >= " + this.size());
 
@@ -149,12 +152,12 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
     }
 
     @Override
-    public int indexOf(Object o) {
+    public int indexOf(final Object o) {
 	return this.elements.indexOf(o);
     }
 
     @Override
-    public int lastIndexOf(Object o) {
+    public int lastIndexOf(final Object o) {
 	return this.elements.lastIndexOf(o);
     }
 
@@ -164,33 +167,34 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
     }
 
     @Override
-    public ListIterator<T> listIterator(int index) {
+    public ListIterator<T> listIterator(final int index) {
 	return this.elements.listIterator(index);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public T remove(int index) {
+    public T remove(final int index) {
 	synchronized (this.elements) {
 	    if (index >= this.size())
 		throw new IndexOutOfBoundsException(index + " >= "
 			+ this.size());
 
 	    try {
-		T previous = (T) Transformer.bytesToObject(this.keeper.getData(
-			this.indices.get(index), false, null), elementClass);
+		final T previous = (T) Transformer.bytesToObject(this.keeper
+			.getData(this.indices.get(index), false, null),
+			this.elementClass);
 		this.removeUnsynchronized(index);
 		return previous;
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    } catch (ClassNotFoundException e) {
+	    } catch (final ClassNotFoundException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    } catch (IOException e) {
+	    } catch (final IOException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
 	    }
@@ -198,7 +202,7 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
     }
 
     @Override
-    public T set(int index, T element) {
+    public T set(final int index, final T element) {
 	if (index >= this.size())
 	    throw new IndexOutOfBoundsException(index + " >= " + this.size());
 
@@ -206,30 +210,30 @@ public class KeptList<T> extends KeptCollection<T> implements List<T>,
 	    throw new IllegalArgumentException("nulls not allowed");
 
 	try {
-	    String path = this.indices.get(index);
+	    final String path = this.indices.get(index);
 	    @SuppressWarnings("unchecked")
-	    T previous = (T) Transformer.bytesToObject(
-		    this.keeper.getData(path, false, null), elementClass);
+	    final T previous = (T) Transformer.bytesToObject(
+		    this.keeper.getData(path, false, null), this.elementClass);
 	    this.keeper.setData(path,
-		    Transformer.objectToBytes(element, elementClass), -1);
+		    Transformer.objectToBytes(element, this.elementClass), -1);
 	    return previous;
-	} catch (KeeperException e) {
+	} catch (final KeeperException e) {
 	    throw new RuntimeException(
 		    e.getClass().getSimpleName() + " caught", e);
-	} catch (InterruptedException e) {
+	} catch (final InterruptedException e) {
 	    throw new RuntimeException(
 		    e.getClass().getSimpleName() + " caught", e);
-	} catch (ClassNotFoundException e) {
+	} catch (final ClassNotFoundException e) {
 	    throw new RuntimeException(
 		    e.getClass().getSimpleName() + " caught", e);
-	} catch (IOException e) {
+	} catch (final IOException e) {
 	    throw new RuntimeException(
 		    e.getClass().getSimpleName() + " caught", e);
 	}
     }
 
     @Override
-    public List<T> subList(int fromIndex, int toIndex) {
+    public List<T> subList(final int fromIndex, final int toIndex) {
 	return this.elements.subList(fromIndex, toIndex);
     }
 }

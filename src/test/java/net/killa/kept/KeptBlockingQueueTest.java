@@ -33,29 +33,29 @@ public class KeptBlockingQueueTest extends BaseKeptUtil {
 
     @Test
     public void testKeptStringQueue() throws Exception {
-	KeptBlockingQueue<String> kbq = new KeptBlockingQueue<String>(
+	final KeptBlockingQueue<String> kbq = new KeptBlockingQueue<String>(
 		String.class, this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	Assert.assertNull(kbq.poll(1, TimeUnit.SECONDS));
 
-	String payload = Long.toString(System.currentTimeMillis());
+	final String payload = Long.toString(System.currentTimeMillis());
 	kbq.put(payload);
 	Thread.sleep(100);
 
 	Assert.assertEquals("not equal", payload, kbq.take());
 
-	List<String> source = new ArrayList<String>();
+	final List<String> source = new ArrayList<String>();
 	source.add(payload);
 	source.add(payload);
 	source.add(payload);
 
-	for (String s : source)
+	for (final String s : source)
 	    kbq.offer(s, Long.MAX_VALUE, TimeUnit.DAYS);
 
 	Thread.sleep(100);
 
-	List<String> sink = new ArrayList<String>();
+	final List<String> sink = new ArrayList<String>();
 	kbq.drainTo(sink);
 	Thread.sleep(100);
 

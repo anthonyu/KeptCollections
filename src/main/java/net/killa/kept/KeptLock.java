@@ -56,24 +56,25 @@ public class KeptLock implements Lock {
      *            A {@link List} of {@link ACL} containing the access control
      *            lists for node creation
      */
-    public KeptLock(ZooKeeper keeper, String znode, List<ACL> acl) {
+    public KeptLock(final ZooKeeper keeper, final String znode,
+	    final List<ACL> acl) {
 	this.keeper = keeper;
 
 	this.znode = znode;
 	this.acl = acl;
     }
 
-    private boolean lockIt(long t, TimeUnit tu) throws KeeperException,
-	    InterruptedException {
+    private boolean lockIt(final long t, final TimeUnit tu)
+	    throws KeeperException, InterruptedException {
 	final CountDownLatch latch = new CountDownLatch(1);
 
 	// convert the given time to milliseconds and add it to the current time
-	long last = System.currentTimeMillis()
+	final long last = System.currentTimeMillis()
 		+ TimeUnit.MILLISECONDS.convert(t, tu);
-	do {
+	do
 	    if (this.keeper.exists(this.znode, new Watcher() {
 		@Override
-		public void process(WatchedEvent event) {
+		public void process(final WatchedEvent event) {
 		    if (event.getType() == EventType.NodeDeleted)
 			latch.countDown();
 		    else if (event.getType() == EventType.NodeCreated)
@@ -85,30 +86,31 @@ public class KeptLock implements Lock {
 	    }) != null) {
 		if (!latch.await(t, tu))
 		    try {
-			this.keeper.create(this.znode, ManagementFactory.getRuntimeMXBean().getName().getBytes(), this.acl,
-				CreateMode.EPHEMERAL);
+			this.keeper.create(this.znode, ManagementFactory
+				.getRuntimeMXBean().getName().getBytes(),
+				this.acl, CreateMode.EPHEMERAL);
 
 			return true;
-		    } catch (KeeperException.NodeExistsException e) {
+		    } catch (final KeeperException.NodeExistsException e) {
 			// ignore it
-		    } catch (KeeperException e) {
+		    } catch (final KeeperException e) {
 			throw e;
 		    }
 		else
 		    return false;
-	    } else {
+	    } else
 		try {
-		    this.keeper.create(this.znode, ManagementFactory.getRuntimeMXBean().getName().getBytes(), this.acl,
+		    this.keeper.create(this.znode, ManagementFactory
+			    .getRuntimeMXBean().getName().getBytes(), this.acl,
 			    CreateMode.EPHEMERAL);
 
 		    return true;
-		} catch (KeeperException.NodeExistsException e) {
+		} catch (final KeeperException.NodeExistsException e) {
 		    // ignore it
-		} catch (KeeperException e) {
+		} catch (final KeeperException e) {
 		    throw e;
 		}
-	    }
-	} while (System.currentTimeMillis() < last);
+	while (System.currentTimeMillis() < last);
 
 	return false;
     }
@@ -119,9 +121,9 @@ public class KeptLock implements Lock {
 	// sleep until the client is unlocked. if interrupted, eat the exception
 	try {
 	    this.lockIt(Long.MAX_VALUE, TimeUnit.DAYS);
-	} catch (KeeperException e) {
+	} catch (final KeeperException e) {
 	    throw new RuntimeException("KeeperException caught", e);
-	} catch (InterruptedException e) {
+	} catch (final InterruptedException e) {
 	    // eat it
 	}
     }
@@ -133,7 +135,7 @@ public class KeptLock implements Lock {
 	// exception
 	try {
 	    this.lockIt(Long.MAX_VALUE, TimeUnit.DAYS);
-	} catch (KeeperException e) {
+	} catch (final KeeperException e) {
 	    throw new RuntimeException("KeeperException caught", e);
 	}
     }
@@ -150,19 +152,20 @@ public class KeptLock implements Lock {
     public boolean tryLock() {
 	try {
 	    return this.lockIt(0, TimeUnit.MICROSECONDS);
-	} catch (KeeperException e) {
+	} catch (final KeeperException e) {
 	    throw new RuntimeException("KeeperException caught", e);
-	} catch (InterruptedException e) {
+	} catch (final InterruptedException e) {
 	    throw new RuntimeException("InterruptedException caught", e);
 	}
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean tryLock(long t, TimeUnit tu) throws InterruptedException {
+    public boolean tryLock(final long t, final TimeUnit tu)
+	    throws InterruptedException {
 	try {
 	    return this.lockIt(t, tu);
-	} catch (KeeperException e) {
+	} catch (final KeeperException e) {
 	    throw new RuntimeException("KeeperException caught", e);
 	}
     }
@@ -177,9 +180,9 @@ public class KeptLock implements Lock {
 		throw new IllegalStateException("already unlocked");
 
 	    this.keeper.delete(this.znode, stat.getVersion());
-	} catch (KeeperException e) {
+	} catch (final KeeperException e) {
 	    throw new RuntimeException("KeeperException caught", e);
-	} catch (InterruptedException e) {
+	} catch (final InterruptedException e) {
 	    throw new RuntimeException("InterruptedException caught", e);
 	}
     }

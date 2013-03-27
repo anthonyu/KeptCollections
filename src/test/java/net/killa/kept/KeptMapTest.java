@@ -33,12 +33,12 @@ public class KeptMapTest extends BaseKeptUtil {
     @Test
     public void testKeptMap() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptMap s = new KeptMap(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptMap s = new KeptMap(this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the map are reflected in the znode
 	String znode = Long.toString(System.currentTimeMillis());
-	String value = "lorem ipsum";
+	final String value = "lorem ipsum";
 
 	Assert.assertFalse(s.containsKey(znode));
 
@@ -76,8 +76,8 @@ public class KeptMapTest extends BaseKeptUtil {
     @Test
     public void testKeptMapClear() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptMap km = new KeptMap(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptMap km = new KeptMap(this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	km.put("one", "value");
 	km.put("two", "value");
@@ -103,8 +103,8 @@ public class KeptMapTest extends BaseKeptUtil {
     @Test
     public void testKeptMapOverwrite() throws KeeperException,
 	    InterruptedException {
-	KeptMap km = new KeptMap(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptMap km = new KeptMap(this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	Assert.assertNull("value not previously null", km.put("one", "value"));
 

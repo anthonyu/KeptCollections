@@ -33,14 +33,15 @@ public class KeptQueueTest extends BaseKeptUtil {
 
     @Test
     public void testKeptStringQueue() throws Exception {
-	KeptQueue<String> kq = new KeptQueue<String>(String.class, this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	final KeptQueue<String> kq = new KeptQueue<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
-	String payload1 = Long.toString(System.currentTimeMillis());
+	final String payload1 = Long.toString(System.currentTimeMillis());
 	Thread.sleep(100);
-	String payload2 = Long.toString(System.currentTimeMillis());
+	final String payload2 = Long.toString(System.currentTimeMillis());
 	Thread.sleep(100);
-	String payload3 = Long.toString(System.currentTimeMillis());
+	final String payload3 = Long.toString(System.currentTimeMillis());
 
 	Assert.assertNull("not null", kq.peek());
 
@@ -70,17 +71,17 @@ public class KeptQueueTest extends BaseKeptUtil {
 
     @Test
     public void testKeptNonPrimitiveQueue() throws Exception {
-	KeptQueue<SerializablePerson> kq = new KeptQueue<SerializablePerson>(
+	final KeptQueue<SerializablePerson> kq = new KeptQueue<SerializablePerson>(
 		SerializablePerson.class, this.keeper, this.parent,
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-	SerializablePerson person1 = new SerializablePerson();
+	final SerializablePerson person1 = new SerializablePerson();
 	person1.age = 50;
 	person1.name = "person1";
-	SerializablePerson person2 = new SerializablePerson();
+	final SerializablePerson person2 = new SerializablePerson();
 	person2.age = 60;
 	person2.name = "person2";
-	SerializablePerson person3 = new SerializablePerson();
+	final SerializablePerson person3 = new SerializablePerson();
 	person3.age = 70;
 	person3.name = "person3";
 
@@ -113,8 +114,9 @@ public class KeptQueueTest extends BaseKeptUtil {
     @Test(expected = NoSuchElementException.class)
     public void testKeptQueueEmptyElement() throws IOException,
 	    KeeperException, InterruptedException {
-	KeptQueue<Object> kq = new KeptQueue<Object>(Object.class, this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	final KeptQueue<Object> kq = new KeptQueue<Object>(Object.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	kq.element();
     }
@@ -122,8 +124,9 @@ public class KeptQueueTest extends BaseKeptUtil {
     @Test(expected = NoSuchElementException.class)
     public void testKeptQueueEmptyRemove() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptQueue<Object> kq = new KeptQueue<Object>(Object.class, this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	final KeptQueue<Object> kq = new KeptQueue<Object>(Object.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	kq.remove();
     }

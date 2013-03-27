@@ -73,8 +73,9 @@ public class KeptMap implements Map<String, String>, Synchronizable {
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public KeptMap(ZooKeeper keeper, String znode, List<ACL> acl,
-	    CreateMode createMode) throws KeeperException, InterruptedException {
+    public KeptMap(final ZooKeeper keeper, final String znode,
+	    final List<ACL> acl, final CreateMode createMode)
+	    throws KeeperException, InterruptedException {
 	this.map = new HashMap<String, String>();
 
 	this.keeper = keeper;
@@ -86,7 +87,7 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 	    if (this.keeper.exists(znode, false) == null)
 		this.keeper.create(znode, new byte[0], acl,
 			CreateMode.PERSISTENT);
-	} catch (KeeperException.NodeExistsException e) {
+	} catch (final KeeperException.NodeExistsException e) {
 	    KeptMap.LOG.debug("skipping creation of znode " + znode
 		    + " as it already exists");
 	}
@@ -118,41 +119,42 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 		this.map.clear();
 
 		// then add all of the child nodes to the cache
-		for (String s : this.keeper.getChildren(this.znode,
+		for (final String s : this.keeper.getChildren(this.znode,
 			this.watcher))
 		    this.map.put(
 			    s,
 			    new String(this.keeper.getData(
 				    this.znode + '/' + s, this.watcher, null)));
-	    } catch (KeeperException.SessionExpiredException e) {
+	    } catch (final KeeperException.SessionExpiredException e) {
 		// ignore it
 	    }
 	}
     }
 
-    private String putUnsynchronized(String key, String value)
+    private String putUnsynchronized(final String key, final String value)
 	    throws KeeperException, InterruptedException {
 	// FIXME: support slashes in keys
 	if (key.indexOf('/') >= 0)
 	    throw new UnsupportedOperationException(
 		    "no slashes allowed in keys");
 
-	String path = this.znode + '/' + key;
+	final String path = this.znode + '/' + key;
 
 	try {
 	    this.keeper.create(path, value.getBytes(), this.acl,
 		    this.createMode);
 
 	    return null;
-	} catch (KeeperException.NodeExistsException e) {
+	} catch (final KeeperException.NodeExistsException e) {
 	    // it already exists
 	    try {
-		Stat stat = new Stat();
-		
+		final Stat stat = new Stat();
+
 		int j = 0;
 		while (true) {
 		    // get the old value and its version
-		    byte[] oldval = this.keeper.getData(path, false, stat);
+		    final byte[] oldval = this.keeper
+			    .getData(path, false, stat);
 
 		    try {
 			// set the new value
@@ -161,7 +163,7 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 
 			// return the old value
 			return new String(oldval);
-		    } catch (KeeperException.BadVersionException f) {
+		    } catch (final KeeperException.BadVersionException f) {
 			if (j++ > 9)
 			    throw f;
 
@@ -172,31 +174,32 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 			Thread.sleep(50);
 		    }
 		}
-	    } catch (KeeperException f) {
+	    } catch (final KeeperException f) {
 		throw new RuntimeException("KeeperException caught", f);
-	    } catch (InterruptedException f) {
+	    } catch (final InterruptedException f) {
 		// someone interrupted us. we need to let go
 		throw new RuntimeException("InterruptedException caught", f);
 	    }
 	}
     }
 
-    private String removeUnsynchronized(Object key)
+    private String removeUnsynchronized(final Object key)
 	    throws InterruptedException, KeeperException {
-	String path = this.znode + '/' + key;
+	final String path = this.znode + '/' + key;
 
 	try {
-	    Stat stat = new Stat();
+	    final Stat stat = new Stat();
 	    int i = 0;
 
-	    while (true) {
+	    while (true)
 		try {
-		    byte[] oldval = this.keeper.getData(path, false, stat);
+		    final byte[] oldval = this.keeper
+			    .getData(path, false, stat);
 
 		    this.keeper.delete(path, stat.getVersion());
 
 		    return new String(oldval);
-		} catch (KeeperException.BadVersionException e) {
+		} catch (final KeeperException.BadVersionException e) {
 		    i++;
 		    if (i > 10)
 			throw e;
@@ -207,8 +210,7 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 
 		    Thread.sleep(50);
 		}
-	    }
-	} catch (KeeperException.NoNodeException e) {
+	} catch (final KeeperException.NoNodeException e) {
 	    return null;
 	}
     }
@@ -223,12 +225,12 @@ public class KeptMap implements Map<String, String>, Synchronizable {
     public void clear() {
 	synchronized (this.map) {
 	    try {
-		for (String s : this.keeper.getChildren(this.znode,
+		for (final String s : this.keeper.getChildren(this.znode,
 			this.watcher))
 		    this.keeper.delete(this.znode + '/' + s, -1);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -236,13 +238,13 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 
     /** {@inheritDoc} */
     @Override
-    public boolean containsKey(Object key) {
+    public boolean containsKey(final Object key) {
 	return this.map.containsKey(key);
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean containsValue(Object value) {
+    public boolean containsValue(final Object value) {
 	return this.map.containsValue(value);
     }
 
@@ -254,7 +256,7 @@ public class KeptMap implements Map<String, String>, Synchronizable {
 
     /** {@inheritDoc} */
     @Override
-    public String get(Object key) {
+    public String get(final Object key) {
 	return this.map.get(key);
     }
 
@@ -277,13 +279,13 @@ public class KeptMap implements Map<String, String>, Synchronizable {
      * containsKey() will return true for the added key.
      */
     @Override
-    public String put(String key, String value) {
+    public String put(final String key, final String value) {
 	synchronized (this.map) {
 	    try {
 		return this.putUnsynchronized(key, value);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -296,15 +298,15 @@ public class KeptMap implements Map<String, String>, Synchronizable {
      * containsKey() will return true for the added key.
      */
     @Override
-    public void putAll(Map<? extends String, ? extends String> m) {
+    public void putAll(final Map<? extends String, ? extends String> m) {
 	synchronized (this.map) {
 	    try {
-		for (Entry<? extends String, ? extends String> entry : m
+		for (final Entry<? extends String, ? extends String> entry : m
 			.entrySet())
 		    this.putUnsynchronized(entry.getKey(), entry.getValue());
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -317,13 +319,13 @@ public class KeptMap implements Map<String, String>, Synchronizable {
      * before containsKey() will return false for the removed key.
      */
     @Override
-    public String remove(Object key) {
+    public String remove(final Object key) {
 	synchronized (this.map) {
 	    try {
 		return this.removeUnsynchronized(key);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}

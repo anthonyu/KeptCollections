@@ -30,10 +30,11 @@ public class KeptListTest extends BaseKeptUtil {
 
     @Test
     public void testKeptStringList() throws Exception {
-	KeptList<String> kl = new KeptList<String>(String.class, this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	final KeptList<String> kl = new KeptList<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
-	String payload = Long.toString(System.currentTimeMillis());
+	final String payload = Long.toString(System.currentTimeMillis());
 	Thread.sleep(100);
 	kl.add(Long.toString(System.currentTimeMillis()));
 	Thread.sleep(100);
@@ -60,10 +61,10 @@ public class KeptListTest extends BaseKeptUtil {
 
     @Test
     public void testKeptLongList() throws Exception {
-	KeptList<Long> kl = new KeptList<Long>(Long.class, this.keeper,
+	final KeptList<Long> kl = new KeptList<Long>(Long.class, this.keeper,
 		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-	long payload = System.currentTimeMillis();
+	final long payload = System.currentTimeMillis();
 	Thread.sleep(100);
 	kl.add(System.currentTimeMillis());
 	Thread.sleep(100);
@@ -90,14 +91,14 @@ public class KeptListTest extends BaseKeptUtil {
 
     @Test
     public void testKeptNonprimitiveList() throws Exception {
-	KeptList<SerializablePerson> kl = new KeptList<SerializablePerson>(
+	final KeptList<SerializablePerson> kl = new KeptList<SerializablePerson>(
 		SerializablePerson.class, this.keeper, this.parent,
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-	SerializablePerson person1 = new SerializablePerson();
+	final SerializablePerson person1 = new SerializablePerson();
 	person1.age = 100;
 	person1.name = "person1";
-	SerializablePerson person2 = new SerializablePerson();
+	final SerializablePerson person2 = new SerializablePerson();
 	person2.age = 90;
 	person2.name = "person2";
 
@@ -133,8 +134,9 @@ public class KeptListTest extends BaseKeptUtil {
     @Test(expected = IndexOutOfBoundsException.class)
     public void testKeptCollectionBigIndex() throws KeeperException,
 	    InterruptedException {
-	KeptList<String> kl = new KeptList<String>(String.class, this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+	final KeptList<String> kl = new KeptList<String>(String.class,
+		this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
+		CreateMode.EPHEMERAL);
 
 	kl.set(Integer.MAX_VALUE, "wtf");
     }

@@ -34,7 +34,7 @@ public class KeptLockTest extends BaseKeptUtil {
     public void after() throws KeeperException, InterruptedException {
 	try {
 	    this.keeper.delete(KeptLockTest.LOCK, -1);
-	} catch (KeeperException.NoNodeException e) {
+	} catch (final KeeperException.NoNodeException e) {
 	    // ignore it
 	}
 	this.keeper.close();
@@ -42,7 +42,7 @@ public class KeptLockTest extends BaseKeptUtil {
 
     @Test
     public void testKeptLock() throws KeeperException, InterruptedException {
-	KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
+	final KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
 		Ids.OPEN_ACL_UNSAFE);
 
 	Assert.assertTrue("cannot lock", kl.tryLock());
@@ -61,10 +61,10 @@ public class KeptLockTest extends BaseKeptUtil {
 
     @Test
     public void testKeptLockWait() throws KeeperException, InterruptedException {
-	KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
+	final KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
 		Ids.OPEN_ACL_UNSAFE);
 
-	long now = System.currentTimeMillis();
+	final long now = System.currentTimeMillis();
 	Assert.assertTrue("cannot lock", kl.tryLock(5, TimeUnit.SECONDS));
 
 	Assert.assertTrue("time is way out of proportion",
@@ -79,7 +79,7 @@ public class KeptLockTest extends BaseKeptUtil {
     @Test(expected = IllegalStateException.class)
     public void testKeptLockUnlockUnlocked() throws KeeperException,
 	    InterruptedException {
-	KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
+	final KeptLock kl = new KeptLock(this.keeper, KeptLockTest.LOCK,
 		Ids.OPEN_ACL_UNSAFE);
 
 	kl.unlock();

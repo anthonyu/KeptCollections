@@ -18,16 +18,11 @@
 package net.killa.kept;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
-import org.apache.zookeeper.ZooKeeper;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 public class KeptConcurrentMapTest extends BaseKeptUtil {
@@ -38,17 +33,16 @@ public class KeptConcurrentMapTest extends BaseKeptUtil {
     @Test
     public void testKeptConcurrentMap() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptConcurrentMap kcm = new KeptConcurrentMap(this.keeper,
-		this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptConcurrentMap kcm = new KeptConcurrentMap(this.keeper,
+		this.parent, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
-	String payload1 = Long.toString(System.currentTimeMillis());
+	final String payload1 = Long.toString(System.currentTimeMillis());
 
 	Assert.assertNull("not null", kcm.putIfAbsent("test", payload1));
 
 	Thread.sleep(100);
 
-	String payload2 = Long.toString(System.currentTimeMillis());
+	final String payload2 = Long.toString(System.currentTimeMillis());
 
 	Assert.assertEquals("not equal", payload1,
 		kcm.putIfAbsent("test", payload2));

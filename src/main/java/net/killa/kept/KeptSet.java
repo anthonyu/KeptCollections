@@ -72,8 +72,9 @@ public class KeptSet implements Set<String>, Synchronizable {
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public KeptSet(ZooKeeper keeper, String znode, List<ACL> acl,
-	    CreateMode createMode) throws KeeperException, InterruptedException {
+    public KeptSet(final ZooKeeper keeper, final String znode,
+	    final List<ACL> acl, final CreateMode createMode)
+	    throws KeeperException, InterruptedException {
 	this.set = new HashSet<String>();
 
 	this.keeper = keeper;
@@ -85,7 +86,7 @@ public class KeptSet implements Set<String>, Synchronizable {
 	    if (this.keeper.exists(znode, false) == null)
 		this.keeper.create(znode, new byte[0], acl,
 			CreateMode.PERSISTENT);
-	} catch (KeeperException.NodeExistsException e) {
+	} catch (final KeeperException.NodeExistsException e) {
 	    KeptSet.LOG.debug("skipping creation of znode " + znode
 		    + " as it already exists");
 	}
@@ -121,16 +122,16 @@ public class KeptSet implements Set<String>, Synchronizable {
 		// clear out the cache and reload it
 		this.set.clear();
 
-		for (String s : this.keeper.getChildren(this.znode,
+		for (final String s : this.keeper.getChildren(this.znode,
 			this.watcher))
 		    this.set.add(s);
-	    } catch (KeeperException.SessionExpiredException e) {
+	    } catch (final KeeperException.SessionExpiredException e) {
 		// ignore it
 	    }
 	}
     }
 
-    private boolean addUnsynchronized(String s) throws KeeperException,
+    private boolean addUnsynchronized(final String s) throws KeeperException,
 	    InterruptedException {
 	// TODO: support slashes in keys
 	if (s.indexOf('/') >= 0)
@@ -145,13 +146,13 @@ public class KeptSet implements Set<String>, Synchronizable {
 		    this.createMode);
 
 	    return true;
-	} catch (KeeperException.NodeExistsException e) {
+	} catch (final KeeperException.NodeExistsException e) {
 	    return false;
 	}
     }
 
-    private boolean removeUnsynchronized(Object o) throws InterruptedException,
-	    KeeperException {
+    private boolean removeUnsynchronized(final Object o)
+	    throws InterruptedException, KeeperException {
 	if (this.set.contains(o)) {
 	    this.keeper.delete(this.znode + '/' + o, -1);
 
@@ -168,13 +169,13 @@ public class KeptSet implements Set<String>, Synchronizable {
      * before contains() will return true for the added {@link String}.
      */
     @Override
-    public boolean add(String s) {
+    public boolean add(final String s) {
 	synchronized (this.set) {
 	    try {
 		return this.addUnsynchronized(s);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -188,19 +189,19 @@ public class KeptSet implements Set<String>, Synchronizable {
      * the additions.
      */
     @Override
-    public boolean addAll(Collection<? extends String> c) {
+    public boolean addAll(final Collection<? extends String> c) {
 	synchronized (this.set) {
 	    try {
 		boolean changed = false;
 
-		for (String s : c)
+		for (final String s : c)
 		    if (this.addUnsynchronized(s) && !changed)
 			changed = true;
 
 		return changed;
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -211,12 +212,12 @@ public class KeptSet implements Set<String>, Synchronizable {
     public void clear() {
 	synchronized (this.set) {
 	    try {
-		for (String s : this.keeper.getChildren(this.znode,
+		for (final String s : this.keeper.getChildren(this.znode,
 			this.watcher))
 		    this.keeper.delete(this.znode + '/' + s, -1);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -224,13 +225,13 @@ public class KeptSet implements Set<String>, Synchronizable {
 
     /** {@inheritDoc} */
     @Override
-    public boolean contains(Object o) {
+    public boolean contains(final Object o) {
 	return this.set.contains(o);
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean containsAll(Collection<?> c) {
+    public boolean containsAll(final Collection<?> c) {
 	return this.set.containsAll(c);
     }
 
@@ -254,13 +255,13 @@ public class KeptSet implements Set<String>, Synchronizable {
      * deletion.
      */
     @Override
-    public boolean remove(Object o) {
+    public boolean remove(final Object o) {
 	synchronized (this.set) {
 	    try {
 		return this.removeUnsynchronized(o);
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -274,19 +275,19 @@ public class KeptSet implements Set<String>, Synchronizable {
      * the deletions.
      */
     @Override
-    public boolean removeAll(Collection<?> c) {
+    public boolean removeAll(final Collection<?> c) {
 	synchronized (this.set) {
 	    try {
 		boolean changed = false;
 
-		for (Object o : c)
+		for (final Object o : c)
 		    if (this.removeUnsynchronized(o) && !changed)
 			changed = true;
 
 		return changed;
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -300,7 +301,7 @@ public class KeptSet implements Set<String>, Synchronizable {
      * the deletions.
      */
     @Override
-    public boolean retainAll(Collection<? extends Object> c) {
+    public boolean retainAll(final Collection<? extends Object> c) {
 	synchronized (this.set) {
 	    try {
 		// try not to copy unless necessary
@@ -312,15 +313,15 @@ public class KeptSet implements Set<String>, Synchronizable {
 
 		boolean changed = false;
 
-		for (Object o : this.set)
+		for (final Object o : this.set)
 		    if (!thatset.contains(o) && this.removeUnsynchronized(o)
 			    && !changed)
 			changed = true;
 
 		return changed;
-	    } catch (KeeperException e) {
+	    } catch (final KeeperException e) {
 		throw new RuntimeException("KeeperException caught", e);
-	    } catch (InterruptedException e) {
+	    } catch (final InterruptedException e) {
 		throw new RuntimeException("InterruptedException caught", e);
 	    }
 	}
@@ -340,7 +341,7 @@ public class KeptSet implements Set<String>, Synchronizable {
 
     /** {@inheritDoc} */
     @Override
-    public <T> T[] toArray(T[] a) {
+    public <T> T[] toArray(final T[] a) {
 	return this.set.toArray(a);
     }
 

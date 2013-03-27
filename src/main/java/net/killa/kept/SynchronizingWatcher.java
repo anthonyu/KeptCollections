@@ -41,7 +41,7 @@ class SynchronizingWatcher implements Watcher {
      * @param synchronizable
      *            A {@link Synchronizable} that will be kept synchronized
      */
-    public SynchronizingWatcher(Synchronizable synchronizable) {
+    public SynchronizingWatcher(final Synchronizable synchronizable) {
 	this.synchronizable = synchronizable;
     }
 
@@ -55,7 +55,7 @@ class SynchronizingWatcher implements Watcher {
      * 
      */
     @Override
-    public void process(WatchedEvent event) {
+    public void process(final WatchedEvent event) {
 	// ignore no-op events and states in which we cannot read from the zk
 	// cluster
 	if (event.getType() == EventType.None
@@ -74,9 +74,9 @@ class SynchronizingWatcher implements Watcher {
 	    this.synchronizable.synchronize();
 
 	    return;
-	} catch (KeeperException e) {
+	} catch (final KeeperException e) {
 	    throw new RuntimeException("KeeperException caught", e);
-	} catch (InterruptedException e) {
+	} catch (final InterruptedException e) {
 	    throw new RuntimeException("InterruptedException caught", e);
 	}
     }

@@ -78,7 +78,7 @@ public class KeptQueue<T> extends KeptList<T> implements Queue<T> {
 
     /** {@inheritDoc} */
     @Override
-    public boolean offer(T o) {
+    public boolean offer(final T o) {
 	return this.add(o);
     }
 

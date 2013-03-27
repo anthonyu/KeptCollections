@@ -48,7 +48,8 @@ public class BaseKeptUtil {
 	final ZooKeeperServer server = new ZooKeeperServer(dir, dir, 2000);
 
 	BaseKeptUtil.nioServerCnxnFactory = new NIOServerCnxnFactory();
-	BaseKeptUtil.nioServerCnxnFactory.configure(new InetSocketAddress(BaseKeptUtil.CLIENT_PORT), 5000);
+	BaseKeptUtil.nioServerCnxnFactory.configure(new InetSocketAddress(
+		BaseKeptUtil.CLIENT_PORT), 5000);
 
 	BaseKeptUtil.nioServerCnxnFactory.startup(server);
     }
@@ -56,22 +57,20 @@ public class BaseKeptUtil {
     @Before
     public void before() throws IOException, InterruptedException,
 	    KeeperException {
-	CountDownLatch latch = new CountDownLatch(1);
+	final CountDownLatch latch = new CountDownLatch(1);
 
-	CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
+	final CountDownOnConnectWatcher watcher = new CountDownOnConnectWatcher();
 	watcher.setLatch(latch);
 	this.keeper = new ZooKeeper("localhost:"
 		+ Integer.toString(BaseKeptUtil.CLIENT_PORT), 20000, watcher);
-	if (!latch.await(5, TimeUnit.SECONDS)) {
+	if (!latch.await(5, TimeUnit.SECONDS))
 	    throw new RuntimeException("unable to connect to server");
-	}
     }
 
     @After
     public void after() throws InterruptedException, KeeperException {
-	for (String s : this.keeper.getChildren(this.parent, false)) {
+	for (final String s : this.keeper.getChildren(this.parent, false))
 	    this.keeper.delete(this.parent + '/' + s, -1);
-	}
 	this.keeper.close();
     }
 

@@ -35,8 +35,8 @@ public class KeptSetTest extends BaseKeptUtil {
     @Test
     public void testKeptSet() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptSet ks = new KeptSet(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptSet ks = new KeptSet(this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the set are reflected in the znode
 	String znode = Long.toString(System.currentTimeMillis());
@@ -76,11 +76,11 @@ public class KeptSetTest extends BaseKeptUtil {
     @Test
     public void testKeptSetReAdd() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptSet ks = new KeptSet(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptSet ks = new KeptSet(this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the set are reflected in the znode
-	String znode = Long.toString(System.currentTimeMillis());
+	final String znode = Long.toString(System.currentTimeMillis());
 
 	Assert.assertFalse(ks.contains(znode));
 
@@ -95,8 +95,8 @@ public class KeptSetTest extends BaseKeptUtil {
     @Test
     public void testKeptSetClear() throws IOException, KeeperException,
 	    InterruptedException {
-	KeptSet ks = new KeptSet(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptSet ks = new KeptSet(this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	ks.add("one");
 	ks.add("two");
@@ -122,14 +122,14 @@ public class KeptSetTest extends BaseKeptUtil {
     @Test
     public void testKeptSetAddAll() throws IOException, KeeperException,
 	    InterruptedException {
-	Set<String> hs = new HashSet<String>();
+	final Set<String> hs = new HashSet<String>();
 
 	hs.add("one");
 	hs.add("two");
 	hs.add("three");
 
-	KeptSet s = new KeptSet(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptSet s = new KeptSet(this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	s.addAll(hs);
 
@@ -142,20 +142,20 @@ public class KeptSetTest extends BaseKeptUtil {
     @Test
     public void testKeptSetRetainAll() throws IOException, KeeperException,
 	    InterruptedException {
-	Set<String> hs1 = new HashSet<String>();
+	final Set<String> hs1 = new HashSet<String>();
 
 	hs1.add("one");
 	hs1.add("two");
 	hs1.add("three");
 
-	Set<String> hs2 = new HashSet<String>();
+	final Set<String> hs2 = new HashSet<String>();
 
 	hs2.add("two");
 	hs2.add("three");
 	hs2.add("four");
 
-	KeptSet ks = new KeptSet(this.keeper, this.parent, Ids.OPEN_ACL_UNSAFE,
-		CreateMode.EPHEMERAL);
+	final KeptSet ks = new KeptSet(this.keeper, this.parent,
+		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	ks.addAll(hs1);
 

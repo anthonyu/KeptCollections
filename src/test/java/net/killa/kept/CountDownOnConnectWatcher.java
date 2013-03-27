@@ -30,12 +30,12 @@ public class CountDownOnConnectWatcher implements Watcher {
 	// for junit
     }
 
-    public void setLatch(CountDownLatch latch) {
+    public void setLatch(final CountDownLatch latch) {
 	this.latch = latch;
     }
 
     @Override
-    public void process(WatchedEvent event) {
+    public void process(final WatchedEvent event) {
 	if (event.getState() == KeeperState.SyncConnected)
 	    this.latch.countDown();
     }
