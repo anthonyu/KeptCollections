@@ -22,6 +22,7 @@ import java.util.NoSuchElementException;
 
 import net.killa.kept.BaseKeptUtil;
 import net.killa.kept.KeptQueue;
+import net.killa.kept.SerializablePerson;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -73,14 +74,14 @@ public class KeptQueueTest extends BaseKeptUtil {
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final SerializablePerson person1 = new SerializablePerson();
-	person1.age = 50;
-	person1.name = "person1";
+	person1.setAge(50);
+	person1.setName("person1");
 	final SerializablePerson person2 = new SerializablePerson();
-	person2.age = 60;
-	person2.name = "person2";
+	person2.setAge(60);
+	person2.setName("person2");
 	final SerializablePerson person3 = new SerializablePerson();
-	person3.age = 70;
-	person3.name = "person3";
+	person3.setAge(70);
+	person3.setName("person3");
 
 	Assert.assertNull("not null", kq.peek());
 
@@ -120,40 +121,5 @@ public class KeptQueueTest extends BaseKeptUtil {
 		CreateMode.EPHEMERAL);
 
 	kq.remove();
-    }
-}
-
-class SerializablePerson implements java.io.Serializable {
-    private static final long serialVersionUID = 1L;
-    String name;
-    int age;
-
-    @Override
-    public int hashCode() {
-	final int prime = 31;
-	int result = 1;
-	result = prime * result + this.age;
-	result = prime * result
-		+ (this.name == null ? 0 : this.name.hashCode());
-	return result;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-	if (this == obj)
-	    return true;
-	if (obj == null)
-	    return false;
-	if (!(obj instanceof SerializablePerson))
-	    return false;
-	final SerializablePerson other = (SerializablePerson) obj;
-	if (this.age != other.age)
-	    return false;
-	if (this.name == null) {
-	    if (other.name != null)
-		return false;
-	} else if (!this.name.equals(other.name))
-	    return false;
-	return true;
     }
 }

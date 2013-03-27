@@ -76,14 +76,14 @@ public class KeptQueueTest extends BaseKeptUtil {
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final SerializablePerson person1 = new SerializablePerson();
-	person1.age = 50;
-	person1.name = "person1";
+	person1.setAge(50);
+	person1.setName("person1");
 	final SerializablePerson person2 = new SerializablePerson();
-	person2.age = 60;
-	person2.name = "person2";
+	person2.setAge(60);
+	person2.setName("person2");
 	final SerializablePerson person3 = new SerializablePerson();
-	person3.age = 70;
-	person3.name = "person3";
+	person3.setAge(70);
+	person3.setName("person3");
 
 	Assert.assertNull("not null", kq.peek());
 

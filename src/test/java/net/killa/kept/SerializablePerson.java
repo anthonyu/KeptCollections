@@ -17,10 +17,29 @@
  */
 package net.killa.kept;
 
-class SerializablePerson implements java.io.Serializable {
-    private static final long serialVersionUID = 1L;
-    String name;
-    int age;
+import java.io.Serializable;
+
+public class SerializablePerson implements Serializable {
+    private static final long serialVersionUID = 6653199453495998850L;
+
+    private String name;
+    private int age;
+
+    public String getName() {
+	return this.name;
+    }
+
+    public void setName(final String name) {
+	this.name = name;
+    }
+
+    public int getAge() {
+	return this.age;
+    }
+
+    public void setAge(final int age) {
+	this.age = age;
+    }
 
     @Override
     public int hashCode() {

@@ -96,11 +96,11 @@ public class KeptListTest extends BaseKeptUtil {
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final SerializablePerson person1 = new SerializablePerson();
-	person1.age = 100;
-	person1.name = "person1";
+	person1.setAge(100);
+	person1.setName("person1");
 	final SerializablePerson person2 = new SerializablePerson();
-	person2.age = 90;
-	person2.name = "person2";
+	person2.setAge(90);
+	person2.setName("person2");
 
 	kl.add(person1);
 	Thread.sleep(100);

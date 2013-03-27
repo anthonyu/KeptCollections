@@ -27,14 +27,14 @@ public class TransformerTest {
     @Test
     public void testSerDeser() throws Exception {
 	final SerializablePerson toFlatten = new SerializablePerson();
-	toFlatten.name = "testName";
-	toFlatten.age = 300;
+	toFlatten.setName("testName");
+	toFlatten.setAge(300);
 	final String string = Transformer.objectToString(toFlatten,
 		SerializablePerson.class);
 	final SerializablePerson deflattened = (SerializablePerson) Transformer
 		.stringToObject(string, SerializablePerson.class);
-	Assert.assertEquals(toFlatten.name, deflattened.name);
-	Assert.assertEquals(toFlatten.age, deflattened.age);
+	Assert.assertEquals(toFlatten.getName(), deflattened.getName());
+	Assert.assertEquals(toFlatten.getAge(), deflattened.getAge());
     }
 
     @Test(expected = NotSerializableException.class)
