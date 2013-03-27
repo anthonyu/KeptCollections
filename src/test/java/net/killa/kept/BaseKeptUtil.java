@@ -26,8 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.server.NIOServerCnxn;
-import org.apache.zookeeper.server.NIOServerCnxn.Factory;
+import org.apache.zookeeper.server.NIOServerCnxnFactory;
 import org.apache.zookeeper.server.ZooKeeperServer;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -37,7 +36,7 @@ import org.junit.BeforeClass;
 public class BaseKeptUtil {
     private static final int CLIENT_PORT = new Random().nextInt(55535) + 10000;
 
-    private static NIOServerCnxn.Factory nioServerCnxnFactory;
+    private static NIOServerCnxnFactory nioServerCnxnFactory;
 
     protected String parent;
     protected ZooKeeper keeper;
@@ -48,8 +47,8 @@ public class BaseKeptUtil {
 		"zookeeper").getAbsoluteFile();
 	final ZooKeeperServer server = new ZooKeeperServer(dir, dir, 2000);
 
-	BaseKeptUtil.nioServerCnxnFactory = new NIOServerCnxn.Factory(
-		new InetSocketAddress(BaseKeptUtil.CLIENT_PORT), 5000);
+	BaseKeptUtil.nioServerCnxnFactory = new NIOServerCnxnFactory();
+	BaseKeptUtil.nioServerCnxnFactory.configure(new InetSocketAddress(BaseKeptUtil.CLIENT_PORT), 5000);
 
 	BaseKeptUtil.nioServerCnxnFactory.startup(server);
     }
