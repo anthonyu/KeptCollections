@@ -171,6 +171,6 @@ public class KeptSetTest extends KeptTestBase {
 
     @Override
     public String getParent() {
-	return "testkeptset";
+	return "/testkeptset";
     }
 }

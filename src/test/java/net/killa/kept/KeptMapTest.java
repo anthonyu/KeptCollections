@@ -126,6 +126,6 @@ public class KeptMapTest extends KeptTestBase {
 
     @Override
     public String getParent() {
-	return "testkeptmap";
+	return "/testkeptmap";
     }
 }

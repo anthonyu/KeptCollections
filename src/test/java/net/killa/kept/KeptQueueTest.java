@@ -129,6 +129,6 @@ public class KeptQueueTest extends KeptTestBase {
 
     @Override
     public String getParent() {
-	return "testkeptqueue";
+	return "/testkeptqueue";
     }
 }
