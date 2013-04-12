@@ -99,4 +99,10 @@ lock and barrier related, that are already implemented by Menagerie
 Where can I get a Jar?
 ----------------------
 
-Right [here](https://github.com/downloads/anthonyu/KeptCollections/kept-collections-0.9.1.jar).
+Use Maven:
+
+    <dependency>
+      <groupId>net.killa.kept</groupId>
+      <artifactId>KeptCollections</artifactId>
+      <version>1.0.0</version>
+    </dependency>
