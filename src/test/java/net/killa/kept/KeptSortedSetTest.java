@@ -5,22 +5,20 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.swing.text.html.HTMLDocument.Iterator;
-
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KeptTreeSetTest extends KeptTestBase{
+public class KeptSortedSetTest extends KeptTestBase{
 	
 	@Test
     public void testKeptTreeSet() throws IOException, KeeperException,
 	    InterruptedException {
 		final String parent = this.getParent();
 
-		final KeptTreeSet ks = new KeptTreeSet(this.keeper, parent,
+		final KeptSortedSet ks = new KeptSortedSet(this.keeper, parent,
 			Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 		
 		// check to see that changes made to the set are reflected in the znode
@@ -58,7 +56,7 @@ public class KeptTreeSetTest extends KeptTestBase{
 	@Test
     public void testKeptTreeSetReAdd() throws IOException, KeeperException,
 	    InterruptedException {
-		final KeptTreeSet ks = new KeptTreeSet(this.keeper, this.getParent(),
+		final KeptSortedSet ks = new KeptSortedSet(this.keeper, this.getParent(),
 			Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 	
 		// check to see that changes made to the set are reflected in the znode
@@ -77,7 +75,7 @@ public class KeptTreeSetTest extends KeptTestBase{
 	@Test
     public void testKeptTreeSetClear() throws IOException, KeeperException,
 	    InterruptedException {
-		final KeptTreeSet ks = new KeptTreeSet(this.keeper, this.getParent(),
+		final KeptSortedSet ks = new KeptSortedSet(this.keeper, this.getParent(),
 			Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 	
 		ks.add("one");
@@ -110,7 +108,7 @@ public class KeptTreeSetTest extends KeptTestBase{
 		hs.add("two");
 		hs.add("three");
 	
-		final KeptTreeSet s = new KeptTreeSet(this.keeper, this.getParent(),
+		final KeptSortedSet s = new KeptSortedSet(this.keeper, this.getParent(),
 			Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 	
 		s.addAll(hs);
@@ -136,7 +134,7 @@ public class KeptTreeSetTest extends KeptTestBase{
 		hs2.add("three");
 		hs2.add("four");
 	
-		final KeptTreeSet ks = new KeptTreeSet(this.keeper, this.getParent(),
+		final KeptSortedSet ks = new KeptSortedSet(this.keeper, this.getParent(),
 			Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 	
 		ks.addAll(hs1);
@@ -167,7 +165,7 @@ public class KeptTreeSetTest extends KeptTestBase{
 		hs1.add("cat");
 		hs1.add("dog");
 	
-		final KeptTreeSet ks = new KeptTreeSet(this.keeper, this.getParent(),
+		final KeptSortedSet ks = new KeptSortedSet(this.keeper, this.getParent(),
 			Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 	
 		ks.addAll(hs1);

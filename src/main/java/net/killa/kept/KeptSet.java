@@ -44,13 +44,75 @@ public class KeptSet implements Set<String>, Synchronizable {
     private static final Logger LOG = Logger.getLogger(KeptSet.class);
 
     private final SynchronizingWatcher watcher;
-    private final Set<String> set;
+    protected final Set<String> set;
 
     private final ZooKeeper keeper;
     private final String znode;
     private final CreateMode createMode;
     private final List<ACL> acl;
+    
+    /**
+     * Construct a KeptSet.
+     * 
+     * @param keeper
+     *            A {@link ZooKeeper} that is synchronized with
+     * 
+     * @param znode
+     *            A {@link String} containing the znode whose children will be
+     *            members of the set
+     * 
+     * @param acl
+     *            A {@link List} of {@link ACL} containing the access control
+     *            lists for child node creation
+     * 
+     * @param createMode
+     *            A {@link CreateMode} representing the persistence of created
+     *            child nodes
+     *            
+     * @param set
+     * 			  A {@link Set} implementing KeptSet           
+     * 
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    
+    public KeptSet(final ZooKeeper keeper, final String znode,
+    	    final List<ACL> acl, final CreateMode createMode, Set<String> set)
+    	    throws KeeperException, InterruptedException {
+    	this.set = set;
 
+    	this.keeper = keeper;
+
+    	// if the znode doesn't exist, create a permanent znode with that path
+    	// TODO: change to allow ephemeral znode when ephemeral parents are
+    	// supported by zookeeper
+    	try {
+    	    if (this.keeper.exists(znode, false) == null)
+    		this.keeper.create(znode, new byte[0], acl,
+    			CreateMode.PERSISTENT);
+    	} catch (final KeeperException.NodeExistsException e) {
+    	    KeptSet.LOG.debug("skipping creation of znode " + znode
+    		    + " as it already exists");
+    	}
+
+    	this.znode = znode;
+    	this.acl = acl;
+    	if (createMode == CreateMode.PERSISTENT
+    		|| createMode == CreateMode.EPHEMERAL)
+    	    this.createMode = createMode;
+    	else if (createMode == CreateMode.PERSISTENT_SEQUENTIAL)
+    	    this.createMode = CreateMode.PERSISTENT;
+    	else if (createMode == CreateMode.EPHEMERAL_SEQUENTIAL)
+    	    this.createMode = CreateMode.EPHEMERAL;
+    	else
+    	    throw new InvalidParameterException("unexpected create mode "
+    		    + createMode.toString());
+
+    	this.watcher = new SynchronizingWatcher(this);
+
+    	this.synchronize();
+    }
+    
     /**
      * Construct a KeptSet.
      * 
