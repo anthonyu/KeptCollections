@@ -17,6 +17,7 @@
  */
 package net.killa.kept;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
@@ -36,8 +37,8 @@ import org.apache.zookeeper.data.Stat;
  * the change.
  * 
  */
-public class KeptConcurrentMap extends KeptMap implements
-	ConcurrentMap<String, String>, Synchronizable {
+public class KeptConcurrentMap<V> extends KeptMap<V> implements
+	ConcurrentMap<String, V>, Synchronizable {
     private final ZooKeeper keeper;
     private final String znode;
     private final List<ACL> acl;
@@ -64,10 +65,11 @@ public class KeptConcurrentMap extends KeptMap implements
      * @throws KeeperException
      * @throws InterruptedException
      */
-    public KeptConcurrentMap(final ZooKeeper keeper, final String znode,
+    public KeptConcurrentMap(final Class<? extends V> elementClass,
+    		final ZooKeeper keeper, final String znode,
 	    final List<ACL> acl, final CreateMode createMode)
 	    throws KeeperException, InterruptedException {
-	super(keeper, znode, acl, createMode);
+	super(elementClass, keeper, znode, acl, createMode);
 
 	this.keeper = keeper;
 	this.znode = znode;
@@ -76,10 +78,11 @@ public class KeptConcurrentMap extends KeptMap implements
     }
 
     @Override
-    public String putIfAbsent(final String key, final String value) {
+    public V putIfAbsent(final String key, final V value) {
 	synchronized (this.map) {
 	    try {
-		this.keeper.create(this.znode + '/' + key, value.getBytes(),
+		this.keeper.create(this.znode + '/' + key, 
+				Transformer.objectToBytes(value, this.elementClass),
 			this.acl, this.createMode);
 
 		return null;
@@ -91,7 +94,10 @@ public class KeptConcurrentMap extends KeptMap implements
 	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    }
+	    } catch (IOException e) {
+	    	throw new RuntimeException(e.getClass().getSimpleName()
+	    			+ " caught", e);
+		}
 	}
     }
 
@@ -126,13 +132,15 @@ public class KeptConcurrentMap extends KeptMap implements
     }
 
     @Override
-    public String replace(final String key, final String value) {
+    public V replace(final String key, final V value) {
 	synchronized (this.map) {
 	    try {
-		final String data = new String(this.keeper.getData(this.znode
-			+ '/' + key, true, null));
+		@SuppressWarnings("unchecked")
+		final V data = (V) Transformer.bytesToObject(this.keeper.getData(this.znode
+			+ '/' + key, true, null), this.elementClass);
 
-		this.keeper.setData(this.znode + '/' + key, value.getBytes(),
+		this.keeper.setData(this.znode + '/' + key, 
+				Transformer.objectToBytes(value, this.elementClass),
 			-1);
 
 		return data;
@@ -144,23 +152,31 @@ public class KeptConcurrentMap extends KeptMap implements
 	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    }
+	    } catch (IOException e) {
+	    	throw new RuntimeException(e.getClass().getSimpleName()
+	    			+ " caught", e);
+		} catch (ClassNotFoundException e) {
+	    	throw new RuntimeException(e.getClass().getSimpleName()
+	    			+ " caught", e);
+		}
 	}
     }
 
     @Override
-    public boolean replace(final String key, final String oldValue,
-	    final String newValue) {
+    public boolean replace(final String key, final V oldValue,
+	    final V newValue) {
 	synchronized (this.map) {
 	    try {
 		final Stat stat = new Stat();
 
-		final String data = new String(this.keeper.getData(this.znode
-			+ '/' + key, true, stat));
+		@SuppressWarnings("unchecked")
+		final V data = (V) Transformer.bytesToObject(this.keeper.getData(this.znode
+			+ '/' + key, true, stat), this.elementClass);
 
 		if (data.equals(oldValue.toString())) {
 		    this.keeper.setData(this.znode + '/' + key,
-			    newValue.getBytes(), stat.getVersion());
+		    		Transformer.objectToBytes(newValue, this.elementClass), 
+		    		stat.getVersion());
 
 		    return true;
 		} else
@@ -175,7 +191,10 @@ public class KeptConcurrentMap extends KeptMap implements
 	    } catch (final InterruptedException e) {
 		throw new RuntimeException(e.getClass().getSimpleName()
 			+ " caught", e);
-	    }
+	    } catch (final Exception e) {
+			throw new RuntimeException(e.getClass().getSimpleName()
+					+ " caught", e);
+		}
 	}
     }
 }

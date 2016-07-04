@@ -31,7 +31,7 @@ public class KeptMapTest extends KeptTestBase {
 	    InterruptedException {
 	final String parent = this.getParent();
 
-	final KeptMap s = new KeptMap(this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
+	final KeptMap s = new KeptMap(String.class, this.keeper, parent, Ids.OPEN_ACL_UNSAFE,
 		CreateMode.EPHEMERAL);
 
 	// check to see that changes made to the map are reflected in the znode
@@ -73,7 +73,7 @@ public class KeptMapTest extends KeptTestBase {
     @Test
     public void testKeptMapClear() throws IOException, KeeperException,
 	    InterruptedException {
-	final KeptMap km = new KeptMap(this.keeper, this.getParent(),
+	final KeptMap km = new KeptMap(String.class, this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	km.put("one", "value");
@@ -100,7 +100,7 @@ public class KeptMapTest extends KeptTestBase {
     @Test
     public void testKeptMapOverwrite() throws KeeperException,
 	    InterruptedException {
-	final KeptMap km = new KeptMap(this.keeper, this.getParent(),
+	final KeptMap km = new KeptMap(String.class, this.keeper, this.getParent(),
 		Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	Assert.assertNull("value not previously null", km.put("one", "value"));

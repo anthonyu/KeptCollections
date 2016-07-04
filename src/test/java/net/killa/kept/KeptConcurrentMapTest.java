@@ -29,7 +29,7 @@ public class KeptConcurrentMapTest extends KeptTestBase {
     @Test
     public void testKeptConcurrentMap() throws IOException, KeeperException,
 	    InterruptedException {
-	final KeptConcurrentMap kcm = new KeptConcurrentMap(this.keeper,
+	final KeptConcurrentMap kcm = new KeptConcurrentMap(String.class, this.keeper,
 		this.getParent(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 	final String payload1 = Long.toString(System.currentTimeMillis());
